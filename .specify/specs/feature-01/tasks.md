@@ -167,9 +167,10 @@
   - Requerimiento: REQ-013, REQ-014, REQ-NF-005
   - Dependencias: TASK-015…TASK-018
 
-- [ ] TASK-020 · `pending` · **Deploy y smoke test de invitaciones y novedades**
-  - Commit + push, deploy en Vercel y verificación en producción del registro
-    por invitación y las novedades por obra.
+- [x] TASK-020 · `completed` · **Deploy y smoke test de invitaciones y novedades**
+  - Commit `1fb0d71` + push a `master`, deploy en Vercel (`fichapp-one.vercel.app`).
+  - Smoke test en producción: `/login` y `/registro` 200; `POST /api/auth/register`
+    403 con jefe existente; `POST /api/auth/registro-invitado` 400 con código inválido.
   - Requerimiento: REQ-NF-001, REQ-013, REQ-014
   - Dependencias: TASK-019
 
@@ -188,3 +189,4 @@
 | 1.1.0   | 2026-08-03 | Auditoría P2/P4: cierre de escalada de rol en registro (primer usuario = Jefe), validación de UUIDs en rutas, deduplicación de formato, `lang="es"`, ignores ESLint para `.opencode`. TASK-014 completada. |
 | 1.2.0   | 2026-08-03 | Rediseño integral de UI (Soft UI Evolution): design tokens claro/oscuro en `globals.css`, tipografía Plus Jakarta Sans, primitivos en `components/ui.tsx`, iconos SVG en `components/icons.tsx`, nueva navegación con estados activos, login split-screen, dashboard con resumen semanal y accesos rápidos, y pantallas fichadas/empleados/obras/reportes/períodos rediseñadas. Validado con lint, typecheck, 72 tests y build. |
 | 1.3.0   | 2026-08-03 | REQ-013 y REQ-014: registro público solo-Jefe con invitaciones por empleado (enlace único, 30 días) y novedades por obra (máx. 500 caracteres). Rebranch a FichApp en metadata, login, registro y navegación. TASK-015…TASK-019 completadas; validado con lint, typecheck, 97 tests y build. TASK-020 (deploy) pendiente. |
+| 1.4.0   | 2026-08-03 | TASK-020 completada: deploy en Vercel (`fichapp-one.vercel.app`) y smoke test en producción aprobado (login/registro 200, registro público 403, código inválido 400). |
