@@ -33,7 +33,9 @@ const admin = {
   role: "ADMIN",
 };
 
-const params = { params: Promise.resolve({ id: "p-1" }) };
+const periodoId = "00000000-0000-4000-8000-000000000001";
+
+const params = { params: Promise.resolve({ id: periodoId }) };
 
 function jsonRequest(body: unknown): Request {
   return new Request("http://localhost/api/periodos/p-1", {
@@ -49,6 +51,15 @@ beforeEach(() => {
 });
 
 describe("PATCH /api/periodos/[id] (REQ-012)", () => {
+  it("rechaza un id malformado (REQ-NF-002)", async () => {
+    const res = await PATCH(
+      jsonRequest({ ingresoAt: "2026-08-03T08:00:00.000Z", egresoAt: null }),
+      { params: Promise.resolve({ id: "no-es-un-uuid" }) }
+    );
+    expect(res.status).toBe(400);
+    expect(mocks.actualizarPeriodo).not.toHaveBeenCalled();
+  });
+
   it("corrige las fechas y registra quién la corrigió", async () => {
     mocks.actualizarPeriodo.mockResolvedValue({ id: "p-1" });
     mocks.marcarCorregido.mockResolvedValue({ id: "p-1", corregido: true });
@@ -61,11 +72,11 @@ describe("PATCH /api/periodos/[id] (REQ-012)", () => {
       params
     );
     expect(res.status).toBe(200);
-    expect(mocks.actualizarPeriodo).toHaveBeenCalledWith("p-1", {
+    expect(mocks.actualizarPeriodo).toHaveBeenCalledWith(periodoId, {
       ingresoAt: expect.any(Date),
       egresoAt: expect.any(Date),
     });
-    expect(mocks.marcarCorregido).toHaveBeenCalledWith("p-1", "u-1");
+    expect(mocks.marcarCorregido).toHaveBeenCalledWith(periodoId, "u-1");
   });
 
   it("rechaza un egreso anterior al ingreso (REQ-NF-002)", async () => {
@@ -112,7 +123,7 @@ describe("DELETE /api/periodos/[id] (REQ-012)", () => {
       params
     );
     expect(res.status).toBe(200);
-    expect(mocks.eliminarPeriodo).toHaveBeenCalledWith("p-1", "u-1");
+    expect(mocks.eliminarPeriodo).toHaveBeenCalledWith(periodoId, "u-1");
   });
 
   it("devuelve 404 si el período no existe", async () => {

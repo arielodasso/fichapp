@@ -48,7 +48,7 @@ const user = {
 const empleado = { id: "e-1", nombre: "Juan", apellido: "Pérez" };
 
 const obra = {
-  id: "o-1",
+  id: "11111111-1111-4111-8111-111111111111",
   nombre: "Edificio Norte",
   descripcion: null,
   estado: "ACTIVA",
@@ -77,13 +77,13 @@ beforeEach(() => {
 describe("POST /api/fichadas: autorización", () => {
   it("rechaza sin sesión", async () => {
     mocks.getCurrentUser.mockResolvedValue(null);
-    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "o-1" }));
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(401);
   });
 
   it("rechaza si el usuario no tiene perfil de empleado", async () => {
     mocks.findEmpleadoByUserId.mockResolvedValue(null);
-    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "o-1" }));
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: expect.stringContaining("empleado") });
   });
@@ -111,9 +111,14 @@ describe("POST /api/fichadas: validación de entrada (REQ-NF-002)", () => {
     expect(res.status).toBe(400);
   });
 
+  it("rechaza un ingreso con id de obra malformado (REQ-NF-002)", async () => {
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "no-es-uuid" }));
+    expect(res.status).toBe(400);
+  });
+
   it("rechaza un ingreso a una obra inactiva (REQ-002)", async () => {
     mocks.findObraById.mockResolvedValue({ ...obra, activo: false });
-    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "o-1" }));
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(400);
   });
 });
@@ -125,18 +130,18 @@ describe("POST /api/fichadas: ingreso (REQ-003, REQ-006)", () => {
     mocks.createIngreso.mockResolvedValue({
       id: "p-2",
       empleadoId: "e-1",
-      obraId: "o-1",
+      obraId: obra.id,
       ingresoAt: ingreso,
       egresoAt: null,
     });
 
-    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "o-1" }));
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.periodo.egresoAt).toBeNull();
     expect(mocks.createIngreso).toHaveBeenCalledWith(
       "e-1",
-      "o-1",
+      obra.id,
       expect.any(Date)
     );
   });
@@ -146,11 +151,11 @@ describe("POST /api/fichadas: ingreso (REQ-003, REQ-006)", () => {
     mocks.findPeriodoAbierto.mockResolvedValue({
       id: "p-1",
       empleadoId: "e-1",
-      obraId: "o-1",
+      obraId: obra.id,
       ingresoAt: ingreso,
     });
 
-    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "o-1" }));
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(409);
   });
 
@@ -159,7 +164,7 @@ describe("POST /api/fichadas: ingreso (REQ-003, REQ-006)", () => {
     mocks.findPeriodoAbierto.mockResolvedValue(null);
     mocks.createIngreso.mockRejectedValue(new mocks.PeriodoAbiertoError());
 
-    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: "o-1" }));
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(409);
   });
 });
@@ -175,13 +180,13 @@ describe("POST /api/fichadas: egreso (REQ-004, REQ-005)", () => {
     mocks.findPeriodoAbierto.mockResolvedValue({
       id: "p-1",
       empleadoId: "e-1",
-      obraId: "o-1",
+      obraId: obra.id,
       ingresoAt: ingreso,
     });
     mocks.cerrarPeriodo.mockResolvedValue({
       id: "p-1",
       empleadoId: "e-1",
-      obraId: "o-1",
+      obraId: obra.id,
       ingresoAt: ingreso,
       egresoAt: new Date("2026-08-03T17:30:00Z"),
     });
@@ -199,7 +204,7 @@ describe("GET /api/fichadas", () => {
       {
         id: "p-1",
         empleadoId: "e-1",
-        obraId: "o-1",
+        obraId: obra.id,
         ingresoAt: ingreso,
         egresoAt: new Date("2026-08-03T17:30:00Z"),
         corregido: false,

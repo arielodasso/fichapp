@@ -109,8 +109,12 @@
   - Requerimiento: REQ-NF-001
   - Dependencias: TASK-012
 
-- [ ] TASK-014 · `pending` · **Verificación de consistencia** (P4)
+- [x] TASK-014 · `completed` · **Verificación de consistencia** (P4)
   - Revisión spec/plan/tasks alineados; sin trabajo no registrado.
+  - Auditoría (5 ejes) completada: validación de entrada en boundaries
+    (REQ-NF-002), bootstrap de jefe en registro (REQ-009), deduplicación de
+    helpers de formato, sin props muertos, `lang="es"`, ignores de ESLint.
+  - La aceptación post-deploy (spec §3) queda cubierta por TASK-013.
   - Dependencias: TASK-013
 
 ## Notas
@@ -125,3 +129,4 @@
 | Versión | Fecha | Cambio |
 |---------|-------|--------|
 | 1.0.0   | 2026-08-03 | Creación inicial |
+| 1.1.0   | 2026-08-03 | Auditoría P2/P4: cierre de escalada de rol en registro (primer usuario = Jefe), validación de UUIDs en rutas, deduplicación de formato, `lang="es"`, ignores ESLint para `.opencode`. TASK-014 completada. |

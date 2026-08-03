@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/services/current-user";
+import { isValidUUID } from "@/lib/utils";
 import {
   deactivateObra,
   updateObra,
@@ -21,6 +22,9 @@ export async function PATCH(
 ) {
   await requireAdmin();
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return Response.json({ error: "Id de obra inválido" }, { status: 400 });
+  }
 
   let body: ObraBody;
   try {
@@ -57,6 +61,9 @@ export async function DELETE(
 ) {
   await requireAdmin();
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return Response.json({ error: "Id de obra inválido" }, { status: 400 });
+  }
 
   const obra = await deactivateObra(id);
   if (!obra) {

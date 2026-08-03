@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createUser: vi.fn(),
   findUserByEmail: vi.fn(),
+  countUsers: vi.fn(),
+  getCurrentUser: vi.fn(),
   cookies: vi.fn(),
 }));
 
@@ -14,6 +16,10 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/db/users", () => ({
   createUser: mocks.createUser,
   findUserByEmail: mocks.findUserByEmail,
+  countUsers: mocks.countUsers,
+}));
+vi.mock("@/lib/services/current-user", () => ({
+  getCurrentUser: mocks.getCurrentUser,
 }));
 
 import { POST } from "./route";
@@ -29,8 +35,10 @@ function jsonRequest(body: unknown): Request {
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.JWT_SECRET = "secreto-de-prueba-con-suficiente-entropia";
-  mocks.cookies.mockResolvedValue({ set: vi.fn() });
+  mocks.cookies.mockResolvedValue({ set: vi.fn(), get: vi.fn() });
   mocks.findUserByEmail.mockResolvedValue(null);
+  mocks.countUsers.mockResolvedValue(1);
+  mocks.getCurrentUser.mockResolvedValue(null);
   mocks.createUser.mockImplementation(
     (input: {
       email: string;
@@ -48,8 +56,8 @@ beforeEach(() => {
   );
 });
 
-describe("POST /api/auth/register (REQ-010)", () => {
-  it("registra un usuario y crea la sesión", async () => {
+describe("POST /api/auth/register (REQ-009, REQ-010)", () => {
+  it("registra un empleado y crea la sesión (REQ-010)", async () => {
     const res = await POST(
       jsonRequest({
         name: "Ana",
@@ -64,6 +72,56 @@ describe("POST /api/auth/register (REQ-010)", () => {
       role: "EMPLOYEE",
     });
     expect(mocks.cookies).toHaveBeenCalled();
+  });
+
+  it("crea el primer usuario del sistema como jefe (bootstrap, REQ-009)", async () => {
+    mocks.countUsers.mockResolvedValue(0);
+    const res = await POST(
+      jsonRequest({
+        name: "Jefa",
+        email: "jefa@example.com",
+        password: "secreto123",
+      })
+    );
+    expect(res.status).toBe(201);
+    const json = await res.json();
+    expect(json.user.role).toBe("ADMIN");
+  });
+
+  it("rechaza crear un jefe sin sesión de jefe", async () => {
+    mocks.countUsers.mockResolvedValue(1);
+    mocks.getCurrentUser.mockResolvedValue(null);
+    const res = await POST(
+      jsonRequest({
+        name: "Ana",
+        email: "ana@example.com",
+        password: "secreto123",
+        role: "ADMIN",
+      })
+    );
+    expect(res.status).toBe(403);
+    expect(mocks.createUser).not.toHaveBeenCalled();
+  });
+
+  it("permite a un jefe crear otro jefe", async () => {
+    mocks.countUsers.mockResolvedValue(1);
+    mocks.getCurrentUser.mockResolvedValue({
+      id: "u-0",
+      email: "jefe@example.com",
+      name: "Jefe",
+      role: "ADMIN",
+    });
+    const res = await POST(
+      jsonRequest({
+        name: "Ana",
+        email: "ana@example.com",
+        password: "secreto123",
+        role: "ADMIN",
+      })
+    );
+    expect(res.status).toBe(201);
+    const json = await res.json();
+    expect(json.user.role).toBe("ADMIN");
   });
 
   it("rechaza datos inválidos (REQ-NF-002)", async () => {

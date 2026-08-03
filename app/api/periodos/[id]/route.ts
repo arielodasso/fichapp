@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/services/current-user";
+import { isValidUUID } from "@/lib/utils";
 import {
   PeriodoAbiertoError,
   actualizarPeriodo,
@@ -25,6 +26,9 @@ export async function PATCH(
 ) {
   const user = await requireAdmin();
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return Response.json({ error: "Id de período inválido" }, { status: 400 });
+  }
 
   let body: CorreccionBody;
   try {
@@ -84,6 +88,9 @@ export async function DELETE(
 ) {
   const user = await requireAdmin();
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return Response.json({ error: "Id de período inválido" }, { status: 400 });
+  }
 
   const periodo = await eliminarPeriodo(id, user.id);
   if (!periodo) {

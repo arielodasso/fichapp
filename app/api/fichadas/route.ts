@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/services/current-user";
+import { isValidUUID } from "@/lib/utils";
 import {
   calcularHoras,
   validarEgreso,
@@ -91,6 +92,12 @@ export async function POST(request: Request) {
     if (!obraId) {
       return Response.json(
         { error: "Seleccioná una obra para el ingreso" },
+        { status: 400 }
+      );
+    }
+    if (!isValidUUID(obraId)) {
+      return Response.json(
+        { error: "Id de obra inválido" },
         { status: 400 }
       );
     }

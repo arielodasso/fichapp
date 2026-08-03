@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"ADMIN" | "EMPLOYEE">("EMPLOYEE");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +46,7 @@ export default function LoginPage() {
           body: JSON.stringify(
             mode === "login"
               ? { email, password }
-              : { name, email, password, role }
+              : { name, email, password }
           ),
         }
       );
@@ -146,19 +145,10 @@ export default function LoginPage() {
           </label>
 
           {mode === "register" && (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Rol
-              <select
-                value={role}
-                onChange={(e) =>
-                  setRole(e.target.value as "ADMIN" | "EMPLOYEE")
-                }
-                className={inputClass}
-              >
-                <option value="EMPLOYEE">Empleado</option>
-                <option value="ADMIN">Jefe</option>
-              </select>
-            </label>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              El primer usuario registrado queda como Jefe; el resto se registra
+              como Empleado.
+            </p>
           )}
 
           {error && (

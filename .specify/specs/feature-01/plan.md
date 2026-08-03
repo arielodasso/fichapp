@@ -28,7 +28,10 @@ REQ-010), persistencia (REQ-011) y corrección de períodos (REQ-012).
   sesión por cookie JWT (opción preferida) — **alternativa descartada:** JWT
   en `localStorage` (vulnerable a XSS).
 - **Roles:** campo `role` en la tabla `users` (`ADMIN` / `EMPLOYEE`); guard de
-  autorización en las rutas de administración y reportes.
+  autorización en las rutas de administración y reportes. **Bootstrap:** el
+  primer usuario registrado se crea como `ADMIN` (jefe); los siguientes se
+  registran como `EMPLOYEE`, y crear otro jefe requiere sesión de jefe
+  (evita auto-asignación de rol por el registro público).
 - **Zona horaria:** se almacena en UTC; el cálculo semanal y la presentación se
   convierten a la zona local (REQ-NF-003).
 - **Diseño:** Tailwind CSS para la UI (formularios, tablas, dashboard del

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skills y utilidades locales fuera del alcance de la app:
+    ".opencode/**",
   ]),
 ]);
 

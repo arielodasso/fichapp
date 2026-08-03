@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
-import { createUser, findUserByEmail } from "@/lib/db/users";
+import { countUsers, createUser, findUserByEmail } from "@/lib/db/users";
+import { getCurrentUser } from "@/lib/services/current-user";
 import {
   SESSION_COOKIE,
   createSessionToken,
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
   const email =
     typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body.password === "string" ? body.password : "";
-  const role: UserRole = body.role === "ADMIN" ? "ADMIN" : "EMPLOYEE";
+  let role: UserRole = body.role === "ADMIN" ? "ADMIN" : "EMPLOYEE";
 
   if (!name || !email || !email.includes("@") || password.length < 8) {
     return Response.json(
@@ -40,6 +41,21 @@ export async function POST(request: Request) {
     return Response.json(
       { error: "El email ya está registrado" },
       { status: 409 }
+    );
+  }
+
+  const [totalUsers, currentUser] = await Promise.all([
+    countUsers(),
+    getCurrentUser(),
+  ]);
+
+  if (totalUsers === 0) {
+    // Primer usuario del sistema: se crea como jefe para poder administrar (REQ-009).
+    role = "ADMIN";
+  } else if (role === "ADMIN" && currentUser?.role !== "ADMIN") {
+    return Response.json(
+      { error: "Solo el jefe puede crear cuentas de jefe" },
+      { status: 403 }
     );
   }
 

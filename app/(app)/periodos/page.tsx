@@ -38,8 +38,6 @@ export default async function PeriodosPage() {
           ingresoAt: p.ingresoAt.toISOString(),
           egresoAt: p.egresoAt?.toISOString() ?? null,
           corregido: p.corregido,
-          corregidoPor: p.corregidoPor,
-          corregidoEn: p.corregidoEn?.toISOString() ?? null,
           horas: p.egresoAt ? calcularHoras(p.ingresoAt, p.egresoAt) : null,
         };
       })}

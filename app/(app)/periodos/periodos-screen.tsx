@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatFecha, formatHoras } from "@/lib/format";
 
 interface PeriodoAdmin {
   id: string;
@@ -12,8 +13,6 @@ interface PeriodoAdmin {
   ingresoAt: string;
   egresoAt: string | null;
   corregido: boolean;
-  corregidoPor: string | null;
-  corregidoEn: string | null;
   horas: number | null;
 }
 
@@ -23,19 +22,6 @@ interface PeriodosScreenProps {
 
 const inputClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
-
-function formatFecha(iso: string): string {
-  return new Date(iso).toLocaleString("es-AR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-}
-
-function formatHoras(horas: number): string {
-  const h = Math.floor(horas);
-  const m = Math.round((horas - h) * 60);
-  return `${h}h ${String(m).padStart(2, "0")}m`;
-}
 
 function toLocalInputValue(iso: string): string {
   const d = new Date(iso);

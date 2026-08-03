@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { formatHoras } from "@/lib/format";
 import type { ReporteSemanalDTO } from "@/lib/services/reportes";
 
 function fechaLocalISO(d: Date): string {
@@ -8,12 +9,6 @@ function fechaLocalISO(d: Date): string {
   const mes = String(d.getMonth() + 1).padStart(2, "0");
   const dia = String(d.getDate()).padStart(2, "0");
   return `${anio}-${mes}-${dia}`;
-}
-
-function formatHoras(horas: number): string {
-  const h = Math.floor(horas);
-  const m = Math.round((horas - h) * 60);
-  return `${h}h ${String(m).padStart(2, "0")}m`;
 }
 
 export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {

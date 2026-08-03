@@ -73,3 +73,10 @@ export async function listUsers(): Promise<User[]> {
   );
   return rows.map(mapUser);
 }
+
+export async function countUsers(): Promise<number> {
+  const { rows } = await pool.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM users`
+  );
+  return Number(rows[0].count);
+}

@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/services/current-user";
+import { isValidUUID } from "@/lib/utils";
 import {
   deactivateEmpleado,
   updateEmpleado,
@@ -20,6 +21,9 @@ export async function PATCH(
 ) {
   await requireAdmin();
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return Response.json({ error: "Id de empleado inválido" }, { status: 400 });
+  }
 
   let body: EmpleadoBody;
   try {
@@ -65,6 +69,9 @@ export async function DELETE(
 ) {
   await requireAdmin();
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return Response.json({ error: "Id de empleado inválido" }, { status: 400 });
+  }
 
   const empleado = await deactivateEmpleado(id);
   if (!empleado) {
