@@ -2,6 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Alert,
+  Badge,
+  btnPrimary,
+  btnSecondary,
+  Card,
+  cx,
+  EmptyState,
+  inputClass,
+  PageHeader,
+} from "@/components/ui";
+import {
+  AlertIcon,
+  BuildingIcon,
+  PencilIcon,
+  PlusIcon,
+} from "@/components/icons";
 
 type ObraEstado = "ACTIVA" | "PAUSADA" | "FINALIZADA";
 
@@ -23,8 +40,11 @@ const ESTADOS: { value: ObraEstado; label: string }[] = [
   { value: "FINALIZADA", label: "Finalizada" },
 ];
 
-const inputClass =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
+const estadoTone: Record<ObraEstado, "success" | "warning" | "neutral"> = {
+  ACTIVA: "success",
+  PAUSADA: "warning",
+  FINALIZADA: "neutral",
+};
 
 function estadoLabel(estado: ObraEstado): string {
   return ESTADOS.find((e) => e.value === estado)?.label ?? estado;
@@ -61,6 +81,12 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
     setFormOpen(true);
   }
 
+  function close() {
+    setFormOpen(false);
+    setEditing(null);
+    setError(null);
+  }
+
   async function save() {
     setError(null);
     if (!nombre.trim()) {
@@ -85,7 +111,7 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
         setError(json.error ?? "Error inesperado");
         return;
       }
-      setFormOpen(false);
+      close();
       router.refresh();
     } catch {
       setError("Error de conexión");
@@ -103,39 +129,43 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
     if (res.ok) router.refresh();
   }
 
+  const fieldClass = "flex flex-col gap-1.5 text-sm font-medium text-foreground";
+
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Obras
-          </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Administración de las obras
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={openNew}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Nueva obra
-        </button>
-      </header>
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
+      <PageHeader
+        title="Obras"
+        description="Administración de las obras"
+        actions={
+          <button type="button" onClick={openNew} className={btnPrimary}>
+            <PlusIcon className="h-4 w-4" />
+            Nueva obra
+          </button>
+        }
+      />
 
       {formOpen && (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <Card className="p-6">
+          <h2 className="mb-4 text-base font-semibold text-foreground">
             {editing ? "Editar obra" : "Nueva obra"}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label className={fieldClass}>
               Nombre
-              <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} className={inputClass} />
+              <input
+                type="text"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                className={inputClass}
+              />
             </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label className={fieldClass}>
               Estado
-              <select value={estado} onChange={(e) => setEstado(e.target.value as ObraEstado)} className={inputClass}>
+              <select
+                value={estado}
+                onChange={(e) => setEstado(e.target.value as ObraEstado)}
+                className={inputClass}
+              >
                 {ESTADOS.map((e) => (
                   <option key={e.value} value={e.value}>
                     {e.label}
@@ -143,7 +173,7 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
                 ))}
               </select>
             </label>
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 sm:col-span-2">
+            <label className={cx(fieldClass, "sm:col-span-2")}>
               Descripción
               <textarea
                 value={descripcion}
@@ -153,83 +183,107 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
               />
             </label>
             {editing && (
-              <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <input
                   type="checkbox"
                   checked={activo}
                   onChange={(e) => setActivo(e.target.checked)}
-                  className="h-4 w-4"
+                  className="h-4 w-4 rounded border-line accent-indigo-600"
                 />
                 Activa
               </label>
             )}
           </div>
-          {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+          {error && (
+            <Alert tone="danger" >
+              <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>{error}</div>
+            </Alert>
+          )}
+
           <div className="mt-4 flex gap-3">
             <button
               type="button"
               disabled={submitting}
               onClick={save}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className={btnPrimary}
             >
               {submitting ? "Guardando..." : "Guardar"}
             </button>
-            <button
-              type="button"
-              onClick={() => setFormOpen(false)}
-              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
+            <button type="button" onClick={close} className={btnSecondary}>
               Cancelar
             </button>
           </div>
-        </section>
+        </Card>
       )}
 
-      <section className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-            <tr>
-              <th className="px-4 py-2 font-medium">Nombre</th>
-              <th className="px-4 py-2 font-medium">Descripción</th>
-              <th className="px-4 py-2 font-medium">Estado</th>
-              <th className="px-4 py-2 font-medium">Activa</th>
-              <th className="px-4 py-2 font-medium">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {obras.map((o) => (
-              <tr key={o.id}>
-                <td className="px-4 py-2 font-medium text-zinc-900 dark:text-zinc-50">
-                  {o.nombre}
-                </td>
-                <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">
-                  {o.descripcion ?? "—"}
-                </td>
-                <td className="px-4 py-2">{estadoLabel(o.estado)}</td>
-                <td className="px-4 py-2">{o.activo ? "Sí" : "No"}</td>
-                <td className="px-4 py-2">
-                  <div className="flex gap-3 text-sm">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(o)}
-                      className="font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleActivo(o)}
-                      className="font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-                    >
-                      {o.activo ? "Desactivar" : "Activar"}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      {obras.length === 0 ? (
+        <EmptyState
+          icon={<BuildingIcon className="h-8 w-8" />}
+          title="No hay obras cargadas"
+          description="Creá la primera obra para poder fichar en ella."
+        />
+      ) : (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-line bg-muted/5 text-xs font-semibold uppercase tracking-wide text-muted">
+                  <th className="px-4 py-3">Nombre</th>
+                  <th className="px-4 py-3">Descripción</th>
+                  <th className="px-4 py-3">Estado</th>
+                  <th className="px-4 py-3">Activa</th>
+                  <th className="px-4 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {obras.map((o) => (
+                  <tr key={o.id} className="transition-colors hover:bg-muted/5">
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {o.nombre}
+                    </td>
+                    <td className="px-4 py-3 text-muted">
+                      {o.descripcion ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge tone={estadoTone[o.estado]}>
+                        {estadoLabel(o.estado)}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {o.activo ? (
+                        <Badge tone="success">Sí</Badge>
+                      ) : (
+                        <Badge tone="neutral">No</Badge>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(o)}
+                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-muted/10 hover:text-foreground"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleActivo(o)}
+                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-muted/10 hover:text-foreground"
+                        >
+                          {o.activo ? "Desactivar" : "Activar"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
     </main>
   );
 }

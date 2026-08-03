@@ -63,6 +63,8 @@ Jefe (UI) → GET /api/reportes/semana?fecha=...
 | `app/(auth)/login/page.tsx` | Crear | Pantalla de login (REQ-010). |
 | `app/(app)/dashboard/page.tsx` | Crear | Home según rol (REQ-009). |
 | `app/(app)/fichadas/page.tsx` + `FichadaForm.tsx` | Crear | UI de ingreso/egreso (REQ-003…REQ-006). |
+| `components/ui.tsx`, `components/icons.tsx` | Crear | Primitivos de UI (Button, Card, Badge, Alert, EmptyState…) e iconos SVG del rediseño (v1.2.0). |
+| `app/(app)/layout.tsx` + `nav-links.tsx`, `app/(auth)/login/page.tsx` | Crear | Shell con navegación por rol y login split-screen (v1.2.0). |
 | `app/(app)/empleados/page.tsx` + componentes | Crear | UI de administración de empleados (REQ-001). |
 | `app/(app)/obras/page.tsx` + componentes | Crear | UI de administración de obras (REQ-002). |
 | `app/(app)/reportes/page.tsx` | Crear | UI del reporte semanal (REQ-008). |

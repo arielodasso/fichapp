@@ -3,6 +3,21 @@
 import Link from "next/link";
 import { formatHoras } from "@/lib/format";
 import type { ReporteSemanalDTO } from "@/lib/services/reportes";
+import {
+  Badge,
+  btnSecondary,
+  Card,
+  EmptyState,
+  PageHeader,
+} from "@/components/ui";
+import {
+  BarChartIcon,
+  BuildingIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  InboxIcon,
+  UsersIcon,
+} from "@/components/icons";
 
 function fechaLocalISO(d: Date): string {
   const anio = d.getFullYear();
@@ -24,97 +39,151 @@ export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
     (acc, obra) => acc + obra.empleados.reduce((s, e) => s + e.horas, 0),
     0
   );
+  const empleadosConHoras = new Set(
+    reporte.porObra.flatMap((o) => o.empleados.map((e) => e.empleadoId))
+  ).size;
+
+  const stats = [
+    {
+      label: "Horas totales",
+      value: formatHoras(totalGeneral),
+      icon: BarChartIcon,
+      accent:
+        "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300",
+    },
+    {
+      label: "Obras con actividad",
+      value: String(reporte.porObra.length),
+      icon: BuildingIcon,
+      accent:
+        "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+    },
+    {
+      label: "Empleados activos",
+      value: String(empleadosConHoras),
+      icon: UsersIcon,
+      accent:
+        "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+    },
+  ];
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Reporte semanal
-          </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            {inicio.toLocaleDateString("es-AR")} al{" "}
-            {ultimoDia.toLocaleDateString("es-AR")}
-          </p>
-        </div>
-        <nav className="flex items-center gap-3 text-sm">
-          <Link
-            href={`/reportes?fecha=${fechaLocalISO(prev)}`}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-          >
-            Semana anterior
-          </Link>
-          <Link
-            href={`/reportes?fecha=${fechaLocalISO(next)}`}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-          >
-            Semana siguiente
-          </Link>
-        </nav>
-      </header>
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
+      <PageHeader
+        title="Reporte semanal"
+        description={`${inicio.toLocaleDateString("es-AR")} al ${ultimoDia.toLocaleDateString("es-AR")}`}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/reportes?fecha=${fechaLocalISO(prev)}`}
+              className={btnSecondary}
+              aria-label="Semana anterior"
+            >
+              <ChevronLeftIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Anterior</span>
+            </Link>
+            <Link
+              href={`/reportes?fecha=${fechaLocalISO(next)}`}
+              className={btnSecondary}
+              aria-label="Semana siguiente"
+            >
+              <span className="hidden sm:inline">Siguiente</span>
+              <ChevronRightIcon className="h-4 w-4" />
+            </Link>
+          </div>
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        {stats.map((s) => (
+          <Card key={s.label} className="flex items-center gap-4 p-5">
+            <span
+              className={`flex h-11 w-11 items-center justify-center rounded-xl ${s.accent}`}
+            >
+              <s.icon className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                {s.value}
+              </p>
+              <p className="text-xs font-medium text-muted">{s.label}</p>
+            </div>
+          </Card>
+        ))}
+      </div>
 
       {reporte.porObra.length === 0 ? (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          No hay horas registradas esta semana.
-        </p>
+        <EmptyState
+          icon={<InboxIcon className="h-8 w-8" />}
+          title="No hay horas registradas esta semana"
+          description="Cuando los empleados fichen, el resumen va a aparecer acá."
+        />
       ) : (
-        <section className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-              <tr>
-                <th className="px-4 py-2 font-medium">Obra</th>
-                <th className="px-4 py-2 font-medium">Empleado</th>
-                <th className="px-4 py-2 text-right font-medium">Horas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {reporte.porObra.map((obra) => (
-                <FragmentObra key={obra.obraId} obra={obra} />
-              ))}
-            </tbody>
-            <tfoot className="bg-zinc-100 dark:bg-zinc-900">
-              <tr>
-                <td
-                  colSpan={2}
-                  className="px-4 py-2 font-semibold text-zinc-900 dark:text-zinc-50"
-                >
-                  Total general
-                </td>
-                <td className="px-4 py-2 text-right font-semibold text-zinc-900 dark:text-zinc-50">
-                  {formatHoras(totalGeneral)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </section>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-line bg-muted/5 text-xs font-semibold uppercase tracking-wide text-muted">
+                  <th className="px-4 py-3">Obra</th>
+                  <th className="px-4 py-3">Empleado</th>
+                  <th className="px-4 py-3 text-right">Horas</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {reporte.porObra.map((obra) => (
+                  <FragmentObra key={obra.obraId} obra={obra} />
+                ))}
+              </tbody>
+              <tfoot className="border-t border-line bg-muted/5">
+                <tr>
+                  <td
+                    colSpan={2}
+                    className="px-4 py-3 font-semibold text-foreground"
+                  >
+                    Total general
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold tabular-nums text-foreground">
+                    {formatHoras(totalGeneral)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </Card>
       )}
     </main>
   );
 }
 
-function FragmentObra({ obra }: { obra: ReporteSemanalDTO["porObra"][number] }) {
+function FragmentObra({
+  obra,
+}: {
+  obra: ReporteSemanalDTO["porObra"][number];
+}) {
   const totalObra = obra.empleados.reduce((s, e) => s + e.horas, 0);
 
   return (
     <>
-      <tr className="bg-zinc-50 dark:bg-zinc-900/50">
-        <td
-          colSpan={3}
-          className="px-4 py-2 font-semibold text-zinc-900 dark:text-zinc-50"
-        >
-          {obra.obraNombre}
-          <span className="ml-2 text-sm font-normal text-zinc-500 dark:text-zinc-400">
-            · {formatHoras(totalObra)}
-          </span>
+      <tr className="bg-muted/5">
+        <td colSpan={3} className="px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-2 font-semibold text-foreground">
+              <BuildingIcon className="h-4 w-4 text-muted" />
+              {obra.obraNombre}
+            </span>
+            <Badge tone="primary">{formatHoras(totalObra)}</Badge>
+          </div>
         </td>
       </tr>
       {obra.empleados.map((e) => (
-        <tr key={e.empleadoId}>
-          <td className="px-4 py-2 text-zinc-400 dark:text-zinc-500" />
-          <td className="px-4 py-2">
+        <tr key={e.empleadoId} className="transition-colors hover:bg-muted/5">
+          <td className="px-4 py-3 text-muted" />
+          <td className="px-4 py-3 text-foreground">
             {e.apellido}, {e.nombre}
           </td>
-          <td className="px-4 py-2 text-right">{formatHoras(e.horas)}</td>
+          <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">
+            {formatHoras(e.horas)}
+          </td>
         </tr>
       ))}
     </>

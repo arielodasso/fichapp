@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { btnSecondary } from "@/components/ui";
+import { LogOutIcon } from "@/components/icons";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -15,9 +17,11 @@ export function LogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
-      className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+      className={btnSecondary}
+      aria-label="Cerrar sesión"
     >
-      Cerrar sesión
+      <LogOutIcon className="h-4 w-4" />
+      <span className="hidden sm:inline">Cerrar sesión</span>
     </button>
   );
 }

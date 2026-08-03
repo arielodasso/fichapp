@@ -130,3 +130,4 @@
 |---------|-------|--------|
 | 1.0.0   | 2026-08-03 | Creación inicial |
 | 1.1.0   | 2026-08-03 | Auditoría P2/P4: cierre de escalada de rol en registro (primer usuario = Jefe), validación de UUIDs en rutas, deduplicación de formato, `lang="es"`, ignores ESLint para `.opencode`. TASK-014 completada. |
+| 1.2.0   | 2026-08-03 | Rediseño integral de UI (Soft UI Evolution): design tokens claro/oscuro en `globals.css`, tipografía Plus Jakarta Sans, primitivos en `components/ui.tsx`, iconos SVG en `components/icons.tsx`, nueva navegación con estados activos, login split-screen, dashboard con resumen semanal y accesos rápidos, y pantallas fichadas/empleados/obras/reportes/períodos rediseñadas. Validado con lint, typecheck, 72 tests y build. |

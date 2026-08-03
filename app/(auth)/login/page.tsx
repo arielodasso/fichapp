@@ -2,8 +2,33 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Alert, cx, inputClass } from "@/components/ui";
+import {
+  AlertIcon,
+  BarChartIcon,
+  ClockIcon,
+  ShieldCheckIcon,
+} from "@/components/icons";
 
 type Mode = "login" | "register";
+
+const FEATURES = [
+  {
+    icon: ClockIcon,
+    title: "Fichado simple",
+    text: "Ingreso y egreso en segundos, con historial completo.",
+  },
+  {
+    icon: BarChartIcon,
+    title: "Reportes semanales",
+    text: "Horas por obra y empleado, de lunes a domingo.",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "Roles claros",
+    text: "El jefe administra; los empleados registran sus fichadas.",
+  },
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,9 +69,7 @@ export default function LoginPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
-            mode === "login"
-              ? { email, password }
-              : { name, email, password }
+            mode === "login" ? { email, password } : { name, email, password }
           ),
         }
       );
@@ -64,110 +87,157 @@ export default function LoginPage() {
     }
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
-
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Fichero de Empleados y Obras
-        </h1>
-        <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-          Ingresá para registrar tus fichadas o consultar el reporte semanal.
-        </p>
+    <main className="flex min-h-screen">
+      <section className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-10 text-white lg:flex">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-violet-400/20 blur-3xl"
+        />
 
-        <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900">
-          <button
-            type="button"
-            onClick={() => switchMode("login")}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              mode === "login"
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            }`}
-          >
-            Ingresar
-          </button>
-          <button
-            type="button"
-            onClick={() => switchMode("register")}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              mode === "register"
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            }`}
-          >
-            Registrarse
-          </button>
+        <div className="relative flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+            <ClockIcon className="h-6 w-6" />
+          </span>
+          <span className="text-lg font-bold tracking-tight">Dev Boost</span>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
-        >
-          {mode === "register" && (
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Nombre
+        <div className="relative max-w-md">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight">
+            Fichero de empleados y obras, en orden.
+          </h1>
+          <p className="mt-3 text-base text-indigo-100">
+            Digitalizá el control de ingreso y egreso, y conocé las horas
+            trabajadas por obra cada semana.
+          </p>
+
+          <ul className="mt-8 flex flex-col gap-5">
+            {FEATURES.map((f) => (
+              <li key={f.title} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15">
+                  <f.icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-semibold">{f.title}</p>
+                  <p className="text-sm text-indigo-100">{f.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="relative text-sm text-indigo-200">
+          Construcción · Obras · Equipos · Horas
+        </p>
+      </section>
+
+      <section className="flex flex-1 items-center justify-center bg-background p-6">
+        <div className="w-full max-w-sm">
+          <div className="mb-6 flex items-center gap-2.5 lg:hidden">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">
+              <ClockIcon className="h-5 w-5" />
+            </span>
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              Dev Boost
+            </span>
+          </div>
+
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            {mode === "login" ? "Ingresá a tu cuenta" : "Creá tu cuenta"}
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            {mode === "login"
+              ? "Registrá tu fichada o consultá el reporte semanal."
+              : "El primer usuario registrado queda como Jefe."}
+          </p>
+
+          <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl border border-line bg-card p-1">
+            {(["login", "register"] as Mode[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => switchMode(m)}
+                aria-pressed={mode === m}
+                className={cx(
+                  "rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-200",
+                  mode === m
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                {m === "login" ? "Ingresar" : "Registrarse"}
+              </button>
+            ))}
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="mt-6 flex flex-col gap-4"
+            noValidate
+          >
+            {mode === "register" && (
+              <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
+                Nombre
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={inputClass}
+                  placeholder="Nombre y apellido"
+                  autoComplete="name"
+                />
+              </label>
+            )}
+
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
+              Email
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={inputClass}
-                placeholder="Nombre y apellido"
-                autoComplete="name"
+                placeholder="correo@ejemplo.com"
+                autoComplete="email"
               />
             </label>
-          )}
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={inputClass}
-              placeholder="correo@ejemplo.com"
-              autoComplete="email"
-            />
-          </label>
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
+              Contraseña
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+                placeholder="Mínimo 8 caracteres"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+              />
+            </label>
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Contraseña
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inputClass}
-              placeholder="Mínimo 8 caracteres"
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-            />
-          </label>
+            {error && (
+              <Alert>
+                <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                {error}
+              </Alert>
+            )}
 
-          {mode === "register" && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              El primer usuario registrado queda como Jefe; el resto se registra
-              como Empleado.
-            </p>
-          )}
-
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            {loading
-              ? "Procesando..."
-              : mode === "login"
-                ? "Ingresar"
-                : "Crear cuenta"}
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading
+                ? "Procesando..."
+                : mode === "login"
+                  ? "Ingresar"
+                  : "Crear cuenta"}
+            </button>
+          </form>
+        </div>
+      </section>
     </main>
   );
 }

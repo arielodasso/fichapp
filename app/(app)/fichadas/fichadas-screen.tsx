@@ -3,6 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatFecha, formatHoras } from "@/lib/format";
+import {
+  Alert,
+  Badge,
+  btnPrimary,
+  Card,
+  cx,
+  EmptyState,
+  inputClass,
+  PageHeader,
+} from "@/components/ui";
+import {
+  AlertIcon,
+  BuildingIcon,
+  ClockIcon,
+  InboxIcon,
+  UserIcon,
+} from "@/components/icons";
 
 interface PeriodoItem {
   id: string;
@@ -57,14 +74,13 @@ export function FichadasScreen({
 
   if (!empleado) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Fichadas
-        </h1>
-        <p className="max-w-md text-sm text-zinc-600 dark:text-zinc-400">
-          No tenés un perfil de empleado asociado. Pedile al jefe que te vincule
-          a un perfil para poder registrar tus fichadas.
-        </p>
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
+        <PageHeader title="Fichadas" />
+        <EmptyState
+          icon={<UserIcon className="h-8 w-8" />}
+          title="No tenés un perfil de empleado asociado"
+          description="Pedile al jefe que te vincule a un perfil para poder registrar tus fichadas."
+        />
       </main>
     );
   }
@@ -72,51 +88,73 @@ export function FichadasScreen({
   const activo = periodos.find((p) => p.egresoAt === null) ?? null;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Fichadas
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {empleado.nombre} {empleado.apellido}
-        </p>
-      </header>
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
+      <PageHeader
+        title="Fichadas"
+        description={`${empleado.nombre} ${empleado.apellido}`}
+      />
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <Card
+        className={cx(
+          "relative overflow-hidden p-6",
+          activo && "border-amber-300 dark:border-amber-500/40"
+        )}
+      >
+        {activo && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-amber-400/15 blur-2xl"
+          />
+        )}
+
         {activo ? (
-          <div className="flex flex-col items-start gap-3">
-            <div>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Estás fichado en{" "}
-                <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                  {activo.obraNombre}
-                </span>
-              </p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Desde {formatFecha(activo.ingresoAt)}
-              </p>
+          <div className="relative flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                <ClockIcon className="h-6 w-6" />
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <Badge tone="warning">En curso</Badge>
+                </div>
+                <p className="mt-1.5 font-semibold text-foreground">
+                  Estás fichado en{" "}
+                  <span className="text-amber-700 dark:text-amber-300">
+                    {activo.obraNombre}
+                  </span>
+                </p>
+                <p className="text-sm text-muted">
+                  Desde {formatFecha(activo.ingresoAt)}
+                </p>
+              </div>
             </div>
             <button
               type="button"
               disabled={submitting}
               onClick={() => runAction("egreso")}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+              className={btnPrimary}
             >
               {submitting ? "Procesando..." : "Registrar egreso"}
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-start gap-3">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              No estás fichado. Seleccioná la obra y registrá tu ingreso.
-            </p>
-            <div className="flex flex-wrap items-end gap-3">
-              <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="relative flex flex-col items-start gap-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary">
+              <BuildingIcon className="h-6 w-6" />
+            </span>
+            <div>
+              <p className="font-semibold text-foreground">No estás fichado</p>
+              <p className="mt-0.5 text-sm text-muted">
+                Seleccioná la obra y registrá tu ingreso.
+              </p>
+            </div>
+            <div className="flex w-full flex-wrap items-end gap-3">
+              <label className="flex min-w-56 flex-1 flex-col gap-1.5 text-sm font-medium text-foreground">
                 Obra
                 <select
                   value={obraId}
                   onChange={(e) => setObraId(e.target.value)}
-                  className="w-64 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                  className={inputClass}
                 >
                   <option value="">Seleccionar obra...</option>
                   {obras.map((o) => (
@@ -130,7 +168,7 @@ export function FichadasScreen({
                 type="button"
                 disabled={submitting || !obraId}
                 onClick={() => runAction("ingreso")}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className={btnPrimary}
               >
                 {submitting ? "Procesando..." : "Registrar ingreso"}
               </button>
@@ -139,49 +177,64 @@ export function FichadasScreen({
         )}
 
         {actionError && (
-          <p className="mt-4 text-sm text-red-600 dark:text-red-400">
-            {actionError}
-          </p>
+          <Alert tone="danger" >
+            <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>{actionError}</div>
+          </Alert>
         )}
-      </section>
+      </Card>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
           Historial
         </h2>
         {periodos.length === 0 ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Todavía no hay fichadas.
-          </p>
+          <EmptyState
+            icon={<InboxIcon className="h-8 w-8" />}
+            title="Todavía no hay fichadas"
+            description="Cuando registres tu primer ingreso, aparecerá acá."
+          />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Ingreso</th>
-                  <th className="px-4 py-2 font-medium">Egreso</th>
-                  <th className="px-4 py-2 font-medium">Obra</th>
-                  <th className="px-4 py-2 font-medium">Horas</th>
-                  <th className="px-4 py-2 font-medium">Corregido</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {periodos.map((p) => (
-                  <tr key={p.id}>
-                    <td className="px-4 py-2">{formatFecha(p.ingresoAt)}</td>
-                    <td className="px-4 py-2">
-                      {p.egresoAt ? formatFecha(p.egresoAt) : "—"}
-                    </td>
-                    <td className="px-4 py-2">{p.obraNombre}</td>
-                    <td className="px-4 py-2">
-                      {p.horas !== null ? formatHoras(p.horas) : "—"}
-                    </td>
-                    <td className="px-4 py-2">{p.corregido ? "Sí" : "No"}</td>
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-line bg-muted/5 text-xs font-semibold uppercase tracking-wide text-muted">
+                    <th className="px-4 py-3">Ingreso</th>
+                    <th className="px-4 py-3">Egreso</th>
+                    <th className="px-4 py-3">Obra</th>
+                    <th className="px-4 py-3 text-right">Horas</th>
+                    <th className="px-4 py-3">Corregido</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {periodos.map((p) => (
+                    <tr key={p.id} className="transition-colors hover:bg-muted/5">
+                      <td className="px-4 py-3 text-foreground">
+                        {formatFecha(p.ingresoAt)}
+                      </td>
+                      <td className="px-4 py-3 text-foreground">
+                        {p.egresoAt ? formatFecha(p.egresoAt) : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-foreground">
+                        {p.obraNombre}
+                      </td>
+                      <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">
+                        {p.horas !== null ? formatHoras(p.horas) : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {p.corregido ? (
+                          <Badge tone="warning">Corregido</Badge>
+                        ) : (
+                          <Badge tone="neutral">No</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         )}
       </section>
     </main>
