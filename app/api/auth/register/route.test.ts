@@ -5,8 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createUser: vi.fn(),
   findUserByEmail: vi.fn(),
-  countUsers: vi.fn(),
-  getCurrentUser: vi.fn(),
+  countAdmins: vi.fn(),
   cookies: vi.fn(),
 }));
 
@@ -16,10 +15,7 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/db/users", () => ({
   createUser: mocks.createUser,
   findUserByEmail: mocks.findUserByEmail,
-  countUsers: mocks.countUsers,
-}));
-vi.mock("@/lib/services/current-user", () => ({
-  getCurrentUser: mocks.getCurrentUser,
+  countAdmins: mocks.countAdmins,
 }));
 
 import { POST } from "./route";
@@ -37,8 +33,7 @@ beforeEach(() => {
   process.env.JWT_SECRET = "secreto-de-prueba-con-suficiente-entropia";
   mocks.cookies.mockResolvedValue({ set: vi.fn(), get: vi.fn() });
   mocks.findUserByEmail.mockResolvedValue(null);
-  mocks.countUsers.mockResolvedValue(1);
-  mocks.getCurrentUser.mockResolvedValue(null);
+  mocks.countAdmins.mockResolvedValue(0);
   mocks.createUser.mockImplementation(
     (input: {
       email: string;
@@ -57,71 +52,49 @@ beforeEach(() => {
 });
 
 describe("POST /api/auth/register (REQ-009, REQ-010)", () => {
-  it("registra un empleado y crea la sesión (REQ-010)", async () => {
+  it("registra el primer usuario como jefe (bootstrap, REQ-009)", async () => {
     const res = await POST(
       jsonRequest({
-        name: "Ana",
-        email: "Ana@Example.com",
+        name: "Jefa",
+        email: "Jefa@Example.com",
         password: "secreto123",
       })
     );
     expect(res.status).toBe(201);
     const json = await res.json();
     expect(json.user).toMatchObject({
-      email: "ana@example.com",
-      role: "EMPLOYEE",
+      email: "jefa@example.com",
+      role: "ADMIN",
     });
     expect(mocks.cookies).toHaveBeenCalled();
   });
 
-  it("crea el primer usuario del sistema como jefe (bootstrap, REQ-009)", async () => {
-    mocks.countUsers.mockResolvedValue(0);
+  it("crea siempre una cuenta de jefe (el rol no es seleccionable)", async () => {
+    mocks.countAdmins.mockResolvedValue(0);
     const res = await POST(
       jsonRequest({
-        name: "Jefa",
-        email: "jefa@example.com",
+        name: "Jefe",
+        email: "jefe@example.com",
         password: "secreto123",
       })
     );
     expect(res.status).toBe(201);
-    const json = await res.json();
-    expect(json.user.role).toBe("ADMIN");
+    expect(mocks.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({ role: "ADMIN" })
+    );
   });
 
-  it("rechaza crear un jefe sin sesión de jefe", async () => {
-    mocks.countUsers.mockResolvedValue(1);
-    mocks.getCurrentUser.mockResolvedValue(null);
+  it("rechaza el registro público cuando ya existe un jefe (REQ-013)", async () => {
+    mocks.countAdmins.mockResolvedValue(1);
     const res = await POST(
       jsonRequest({
         name: "Ana",
         email: "ana@example.com",
         password: "secreto123",
-        role: "ADMIN",
       })
     );
     expect(res.status).toBe(403);
     expect(mocks.createUser).not.toHaveBeenCalled();
-  });
-
-  it("permite a un jefe crear otro jefe", async () => {
-    mocks.countUsers.mockResolvedValue(1);
-    mocks.getCurrentUser.mockResolvedValue({
-      id: "u-0",
-      email: "jefe@example.com",
-      name: "Jefe",
-      role: "ADMIN",
-    });
-    const res = await POST(
-      jsonRequest({
-        name: "Ana",
-        email: "ana@example.com",
-        password: "secreto123",
-        role: "ADMIN",
-      })
-    );
-    expect(res.status).toBe(201);
-    const json = await res.json();
-    expect(json.user.role).toBe("ADMIN");
   });
 
   it("rechaza datos inválidos (REQ-NF-002)", async () => {

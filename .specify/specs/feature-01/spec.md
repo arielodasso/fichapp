@@ -38,6 +38,8 @@ Cada requerimiento es claro, explícito y rastreable. Se referencian desde
 | REQ-010 | Autenticación de usuarios (email + contraseña) para acceso a la aplicación. | Alta |
 | REQ-011 | Persistir todos los datos (empleados, obras, fichadas, usuarios) de forma duradera. | Alta |
 | REQ-012 | Corregir/eliminar un período de trabajo erróneo (solo por el jefe, dejando registro de la corrección). | Media |
+| REQ-013 | El registro público solo crea cuentas de **jefe** (bootstrap del primer usuario). Los empleados se incorporan mediante **invitaciones** generadas por el jefe, por empleado, con enlace de uso único y vencimiento (30 días). | Alta |
+| REQ-014 | Novedades/comentarios por obra: empleados y jefes pueden publicar y eliminar novedades (máx. 500 caracteres); cada novedad muestra autor y fecha. | Alta |
 
 ### 2.2 Requerimientos no funcionales
 
@@ -64,6 +66,13 @@ Criterios verificables que definen la "Definition of Done" de este feature
       agrupadas por semana (lunes a domingo).
 - [ ] Un usuario sin rol de jefe no accede a la administración ni a los
       reportes.
+- [ ] El primer usuario registrado en la app pública queda como jefe; con un
+      jefe existente el registro público se cierra (403) y se muestra la
+      pantalla de ingreso (REQ-013).
+- [ ] El jefe genera un enlace de invitación por empleado; el enlace es único,
+      vence a los 30 días y crea la cuenta de empleado al ser usado (REQ-013).
+- [ ] Un empleado o el jefe publica una novedad en una obra y puede eliminarla;
+      se rechazan novedades vacías o de más de 500 caracteres (REQ-014).
 - [ ] La aplicación se despliega en Vercel y funciona con la base de datos en
       producción.
 - [ ] Todas las validaciones de datos funcionan en frontend y backend.
@@ -119,3 +128,4 @@ Describir los módulos/componentes a crear o modificar y sus responsabilidades:
 | Versión | Fecha | Cambio |
 |---------|-------|--------|
 | 1.0.0   | 2026-08-03 | Creación inicial |
+| 1.1.0   | 2026-08-03 | Rebrand a FichApp; REQ-013 (invitaciones por empleado) y REQ-014 (novedades por obra) |

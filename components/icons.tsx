@@ -186,3 +186,37 @@ export function InboxIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function MessageIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" />
+    </Svg>
+  );
+}
+
+export function SendIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+    </Svg>
+  );
+}
+
+export function LinkIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" />
+      <path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5" />
+    </Svg>
+  );
+}
+
+export function CopyIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </Svg>
+  );
+}

@@ -23,7 +23,7 @@ export default async function AppLayout({
               <ClockIcon className="h-5 w-5" />
             </span>
             <span className="hidden text-base font-bold tracking-tight sm:block">
-              Dev Boost
+              FichApp
             </span>
           </Link>
 

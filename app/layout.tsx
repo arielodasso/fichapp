@@ -10,8 +10,8 @@ const display = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Dev Boost · Fichero de Empleados y Obras",
-    template: "%s · Dev Boost",
+    default: "FichApp · Fichero de Empleados y Obras",
+    template: "%s · FichApp",
   },
   description:
     "Registro de ingreso/egreso y reporte semanal de horas por obra",

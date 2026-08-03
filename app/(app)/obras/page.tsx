@@ -1,14 +1,16 @@
-import { requireAdmin } from "@/lib/services/current-user";
+import { requireUser } from "@/lib/services/current-user";
 import { listObras } from "@/lib/db/obras";
 import { ObrasScreen } from "./obras-screen";
 
 export default async function ObrasPage() {
-  await requireAdmin();
+  const user = await requireUser();
+  const isAdmin = user.role === "ADMIN";
 
-  const obras = await listObras();
+  const obras = await listObras({ soloActivas: !isAdmin });
 
   return (
     <ObrasScreen
+      isAdmin={isAdmin}
       obras={obras.map((o) => ({
         id: o.id,
         nombre: o.nombre,

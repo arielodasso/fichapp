@@ -16,7 +16,7 @@ const links = [
   { href: "/dashboard", label: "Inicio", icon: LayoutGridIcon },
   { href: "/fichadas", label: "Fichadas", icon: ClockIcon, admin: false },
   { href: "/empleados", label: "Empleados", icon: UsersIcon, admin: true },
-  { href: "/obras", label: "Obras", icon: BuildingIcon, admin: true },
+  { href: "/obras", label: "Obras", icon: BuildingIcon, admin: false },
   { href: "/reportes", label: "Reportes", icon: BarChartIcon, admin: true },
   { href: "/periodos", label: "Períodos", icon: HistoryIcon, admin: true },
 ];

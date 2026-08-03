@@ -1,19 +1,16 @@
 import { cookies } from "next/headers";
-import { countUsers, createUser, findUserByEmail } from "@/lib/db/users";
-import { getCurrentUser } from "@/lib/services/current-user";
+import { countAdmins, createUser, findUserByEmail } from "@/lib/db/users";
 import {
   SESSION_COOKIE,
   createSessionToken,
   getSessionCookieOptions,
   hashPassword,
-  type UserRole,
 } from "@/lib/services/auth";
 
 interface RegisterBody {
   name?: unknown;
   email?: unknown;
   password?: unknown;
-  role?: unknown;
 }
 
 export async function POST(request: Request) {
@@ -28,7 +25,6 @@ export async function POST(request: Request) {
   const email =
     typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body.password === "string" ? body.password : "";
-  let role: UserRole = body.role === "ADMIN" ? "ADMIN" : "EMPLOYEE";
 
   if (!name || !email || !email.includes("@") || password.length < 8) {
     return Response.json(
@@ -44,23 +40,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const [totalUsers, currentUser] = await Promise.all([
-    countUsers(),
-    getCurrentUser(),
-  ]);
-
-  if (totalUsers === 0) {
-    // Primer usuario del sistema: se crea como jefe para poder administrar (REQ-009).
-    role = "ADMIN";
-  } else if (role === "ADMIN" && currentUser?.role !== "ADMIN") {
+  const admins = await countAdmins();
+  if (admins > 0) {
+    // El registro público crea exclusivamente al jefe inicial (bootstrap).
+    // Los empleados se registran mediante enlaces de invitación (REQ-013).
     return Response.json(
-      { error: "Solo el jefe puede crear cuentas de jefe" },
+      {
+        error:
+          "El registro público está cerrado. Si sos empleado, usá el enlace de invitación que te envió el jefe.",
+      },
       { status: 403 }
     );
   }
 
   const passwordHash = await hashPassword(password);
-  const user = await createUser({ email, passwordHash, name, role });
+  const user = await createUser({ email, passwordHash, name, role: "ADMIN" });
 
   const token = await createSessionToken({
     id: user.id,

@@ -64,3 +64,29 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_periodos_abierto_unico
 CREATE INDEX IF NOT EXISTS idx_periodos_empleado   ON periodos (empleado_id);
 CREATE INDEX IF NOT EXISTS idx_periodos_obra_ingreso ON periodos (obra_id, ingreso_at);
 CREATE INDEX IF NOT EXISTS idx_periodos_rango      ON periodos (ingreso_at, egreso_at);
+
+-- Invitaciones de empleados (REQ-013): el jefe genera un código único por empleado.
+CREATE TABLE IF NOT EXISTS invitaciones (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  empleado_id UUID NOT NULL REFERENCES empleados(id) ON DELETE CASCADE,
+  creado_por  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  codigo      TEXT NOT NULL UNIQUE,
+  usado_por   UUID REFERENCES users(id) ON DELETE SET NULL,
+  usado_en    TIMESTAMPTZ,
+  expira_en   TIMESTAMPTZ NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_invitaciones_codigo   ON invitaciones (codigo);
+CREATE INDEX IF NOT EXISTS idx_invitaciones_empleado ON invitaciones (empleado_id);
+
+-- Novedades/comentarios de obra (REQ-014): notas de los empleados vinculadas a la obra.
+CREATE TABLE IF NOT EXISTS novedades_obra (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  obra_id    UUID NOT NULL REFERENCES obras(id) ON DELETE CASCADE,
+  autor_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  contenido  TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_novedades_obra ON novedades_obra (obra_id, created_at DESC);

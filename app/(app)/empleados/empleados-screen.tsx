@@ -15,6 +15,9 @@ import {
 } from "@/components/ui";
 import {
   AlertIcon,
+  CheckIcon,
+  CopyIcon,
+  LinkIcon,
   PencilIcon,
   PlusIcon,
   UsersIcon,
@@ -33,11 +36,13 @@ interface EmpleadoView {
 interface EmpleadosScreenProps {
   empleados: EmpleadoView[];
   usuarios: { id: string; email: string; name: string }[];
+  invitaciones: Record<string, { id: string; codigo: string; expiraEn: string }>;
 }
 
 export function EmpleadosScreen({
   empleados,
   usuarios,
+  invitaciones,
 }: EmpleadosScreenProps) {
   const router = useRouter();
   const [formOpen, setFormOpen] = useState(false);
@@ -50,6 +55,11 @@ export function EmpleadosScreen({
   const [activo, setActivo] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [invitacionBanner, setInvitacionBanner] = useState<{
+    nombre: string;
+    link: string;
+  } | null>(null);
+  const [copiado, setCopiado] = useState(false);
 
   function openNew() {
     setEditing(null);
@@ -126,6 +136,40 @@ export function EmpleadosScreen({
       body: JSON.stringify({ activo: !e.activo }),
     });
     if (res.ok) router.refresh();
+  }
+
+  async function generarInvitacion(e: EmpleadoView) {
+    setError(null);
+    setInvitacionBanner(null);
+    try {
+      const res = await fetch("/api/invitaciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ empleadoId: e.id }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json.error ?? "Error inesperado");
+        return;
+      }
+      setInvitacionBanner({
+        nombre: `${e.nombre} ${e.apellido}`,
+        link: json.invitacion.link,
+      });
+      setCopiado(false);
+    } catch {
+      setError("Error de conexión");
+    }
+  }
+
+  async function copiarEnlace() {
+    if (!invitacionBanner) return;
+    try {
+      await navigator.clipboard.writeText(invitacionBanner.link);
+      setCopiado(true);
+    } catch {
+      setError("No se pudo copiar el enlace");
+    }
   }
 
   const fieldClass =
@@ -237,6 +281,51 @@ export function EmpleadosScreen({
         </Card>
       )}
 
+      {invitacionBanner && (
+        <Card className="p-6">
+          <div className="flex items-start gap-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+              <LinkIcon className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold text-foreground">
+                Enlace de invitación para {invitacionBanner.nombre}
+              </h2>
+              <p className="mt-0.5 text-sm text-muted">
+                Enviáselo por WhatsApp o email. Al abrirlo, el empleado completa
+                su registro y queda vinculado a su perfil.
+              </p>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <code className="min-w-0 flex-1 break-all rounded-lg border border-line bg-muted/5 px-3 py-2 text-sm text-foreground">
+                  {invitacionBanner.link}
+                </code>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={copiarEnlace}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-primary-strong"
+                  >
+                    {copiado ? (
+                      <CheckIcon className="h-4 w-4" />
+                    ) : (
+                      <CopyIcon className="h-4 w-4" />
+                    )}
+                    {copiado ? "Copiado" : "Copiar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitacionBanner(null)}
+                    className="inline-flex items-center justify-center rounded-lg border border-line px-3 py-2 text-sm font-semibold text-muted transition-colors hover:bg-muted/10 hover:text-foreground"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {empleados.length === 0 ? (
         <EmptyState
           icon={<UsersIcon className="h-8 w-8" />}
@@ -266,9 +355,11 @@ export function EmpleadosScreen({
                       <p className="font-medium text-foreground">
                         {e.nombre} {e.apellido}
                       </p>
-                      {e.userId && (
+                      {e.userId ? (
                         <p className="text-xs text-muted">Vinculado a usuario</p>
-                      )}
+                      ) : invitaciones[e.id] ? (
+                        <Badge tone="warning">Invitación pendiente</Badge>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 text-foreground">
                       {e.documento}
@@ -283,6 +374,16 @@ export function EmpleadosScreen({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
+                        {!e.userId && (
+                          <button
+                            type="button"
+                            onClick={() => generarInvitacion(e)}
+                            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft"
+                          >
+                            <LinkIcon className="h-4 w-4" />
+                            Invitar
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => openEdit(e)}

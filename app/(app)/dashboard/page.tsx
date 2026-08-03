@@ -51,10 +51,9 @@ export default async function DashboardPage() {
     {
       href: "/obras",
       title: "Obras",
-      text: "Creá y administrá las obras activas.",
+      text: "Consultá las obras y dejá tus novedades.",
       icon: BuildingIcon,
       accent: "text-amber-600 bg-amber-100 dark:text-amber-300 dark:bg-amber-500/15",
-      admin: true,
     },
   ].filter((l) => !l.admin || isAdmin);
 

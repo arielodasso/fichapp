@@ -19,7 +19,7 @@ export interface CreateUserInput {
   role: UserRole;
 }
 
-interface UserRow {
+export interface UserRow {
   id: string;
   email: string;
   password_hash: string;
@@ -29,7 +29,7 @@ interface UserRow {
   updated_at: Date;
 }
 
-function mapUser(row: UserRow): User {
+export function mapUser(row: UserRow): User {
   return {
     id: row.id,
     email: row.email,
@@ -77,6 +77,13 @@ export async function listUsers(): Promise<User[]> {
 export async function countUsers(): Promise<number> {
   const { rows } = await pool.query<{ count: string }>(
     `SELECT count(*)::text AS count FROM users`
+  );
+  return Number(rows[0].count);
+}
+
+export async function countAdmins(): Promise<number> {
+  const { rows } = await pool.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM users WHERE role = 'ADMIN'`
   );
   return Number(rows[0].count);
 }

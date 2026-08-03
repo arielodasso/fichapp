@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -31,6 +32,7 @@ interface ObraView {
 }
 
 interface ObrasScreenProps {
+  isAdmin: boolean;
   obras: ObraView[];
 }
 
@@ -50,7 +52,7 @@ function estadoLabel(estado: ObraEstado): string {
   return ESTADOS.find((e) => e.value === estado)?.label ?? estado;
 }
 
-export function ObrasScreen({ obras }: ObrasScreenProps) {
+export function ObrasScreen({ isAdmin, obras }: ObrasScreenProps) {
   const router = useRouter();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ObraView | null>(null);
@@ -131,6 +133,52 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
 
   const fieldClass = "flex flex-col gap-1.5 text-sm font-medium text-foreground";
 
+  if (!isAdmin) {
+    return (
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
+        <PageHeader
+          title="Obras"
+          description="Consultá las obras y dejá tus novedades."
+        />
+        {obras.length === 0 ? (
+          <EmptyState
+            icon={<BuildingIcon className="h-8 w-8" />}
+            title="No hay obras activas"
+            description="Cuando el jefe cargue obras, vas a poder verlas acá."
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {obras.map((o) => (
+              <Link
+                key={o.id}
+                href={`/obras/${o.id}`}
+                className="group flex flex-col gap-4 rounded-2xl border border-line bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                    <BuildingIcon className="h-5 w-5" />
+                  </span>
+                  <Badge tone={estadoTone[o.estado]}>
+                    {estadoLabel(o.estado)}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{o.nombre}</p>
+                  <p className="mt-0.5 line-clamp-2 text-sm text-muted">
+                    {o.descripcion ?? "Sin descripción"}
+                  </p>
+                </div>
+                <p className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  Ver obra y novedades
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:p-6">
       <PageHeader
@@ -196,7 +244,7 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
           </div>
 
           {error && (
-            <Alert tone="danger" >
+            <Alert tone="danger">
               <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
               <div>{error}</div>
             </Alert>
@@ -260,6 +308,12 @@ export function ObrasScreen({ obras }: ObrasScreenProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/obras/${o.id}`}
+                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft"
+                        >
+                          Ver
+                        </Link>
                         <button
                           type="button"
                           onClick={() => openEdit(o)}

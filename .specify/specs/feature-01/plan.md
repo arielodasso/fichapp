@@ -2,7 +2,7 @@
 
 ## Meta
 
-- **Spec de referencia:** `specs/feature-01/spec.md` (REQ-001…REQ-012)
+- **Spec de referencia:** `specs/feature-01/spec.md` (REQ-001…REQ-014)
 - **Versión del plan:** 1.0.0
 - **Fecha:** 2026-08-03
 - **Constitución:** v1.0.0
@@ -14,7 +14,9 @@ Implementar la aplicación full-stack del fichero de empleados y obras con
 Cubre todos los requerimientos del spec: administración de empleados y obras
 (REQ-001, REQ-002), fichado de ingreso/egreso (REQ-003…REQ-006), cálculo de
 horas (REQ-007), reporte semanal (REQ-008), autenticación por roles (REQ-009,
-REQ-010), persistencia (REQ-011) y corrección de períodos (REQ-012).
+REQ-010), persistencia (REQ-011), corrección de períodos (REQ-012), registro
+solo-Jefe con invitaciones por empleado (REQ-013) y novedades por obra
+(REQ-014).
 
 ## 2. Diseño propuesto
 
@@ -28,10 +30,13 @@ REQ-010), persistencia (REQ-011) y corrección de períodos (REQ-012).
   sesión por cookie JWT (opción preferida) — **alternativa descartada:** JWT
   en `localStorage` (vulnerable a XSS).
 - **Roles:** campo `role` en la tabla `users` (`ADMIN` / `EMPLOYEE`); guard de
-  autorización en las rutas de administración y reportes. **Bootstrap:** el
-  primer usuario registrado se crea como `ADMIN` (jefe); los siguientes se
-  registran como `EMPLOYEE`, y crear otro jefe requiere sesión de jefe
-  (evita auto-asignación de rol por el registro público).
+  autorización en las rutas de administración y reportes. **Bootstrap (v1.3.0):**
+  el registro público solo crea el primer usuario como `ADMIN` (jefe); una vez
+  que existe un jefe el registro público responde 403. Los empleados ingresan
+  mediante **invitaciones** generadas por el jefe (código único de 6 caracteres,
+  validez 30 días, reutilizable mientras esté pendiente); el canje crea la
+  cuenta `EMPLOYEE` y vincula el perfil en una transacción con `FOR UPDATE`
+  (REQ-013).
 - **Zona horaria:** se almacena en UTC; el cálculo semanal y la presentación se
   convierten a la zona local (REQ-NF-003).
 - **Diseño:** Tailwind CSS para la UI (formularios, tablas, dashboard del
@@ -78,6 +83,10 @@ Jefe (UI) → GET /api/reportes/semana?fecha=...
 | `lib/services/auth.ts` | Crear | Hash, sesión y guard de roles (REQ-009, REQ-010). |
 | `lib/db/schema.sql` + `lib/db/migrate.ts` | Crear | Esquema y migraciones (REQ-011). |
 | `lib/db/client.ts` + repos (`empleados.ts`, `obras.ts`, `fichadas.ts`, `users.ts`) | Crear | Acceso a datos (REQ-001…REQ-012). |
+| `lib/domain/invitaciones.ts` + `lib/db/invitaciones.ts` | Crear | Códigos de invitación y transacción de canje con `FOR UPDATE` (REQ-013). |
+| `app/api/auth/registro-invitado/route.ts`, `app/api/invitaciones/route.ts` + `[id]/route.ts`, `app/(auth)/registro/*` | Crear | Registro por invitación y gestión de enlaces por el jefe (REQ-013). |
+| `lib/db/novedades.ts` + `app/api/obras/[id]/novedades/route.ts` + `[novedadId]/route.ts` | Crear | Novedades por obra (máx. 500 caracteres; DELETE autor o jefe) (REQ-014). |
+| `app/(app)/obras/[id]/page.tsx` + `obra-screen.tsx` | Crear | Detalle de obra con novedades y edición (REQ-002, REQ-014). |
 | Tests (`tests/`, `lib/domain/*.test.ts`) | Crear | Validación por módulo (P2). |
 
 ## 4. Plan de implementación
@@ -98,7 +107,12 @@ Pasos ordenados, cada uno vinculado a su requerimiento:
 8. Implementar `lib/domain/reportes` + API + UI del reporte semanal. →
    REQ-008
 9. Implementar corrección de períodos por el jefe. → REQ-012
-10. Validación integral: pruebas, typecheck, lint y despliegue en Vercel. →
+10. Cerrar el registro público a solo-Jefe y agregar invitaciones por empleado
+    (dominio, transacción de canje, API y UI en empleados) + registro por
+    enlace. → REQ-013
+11. Agregar novedades por obra (tabla, API GET/POST/DELETE y detalle de obra).
+    → REQ-014
+12. Validación integral: pruebas, typecheck, lint y despliegue en Vercel. →
     REQ-NF-001, REQ-NF-005, P2
 
 ## 5. Estrategia de validación (P2)
@@ -138,3 +152,4 @@ Pasos ordenados, cada uno vinculado a su requerimiento:
 | Versión | Fecha | Cambio |
 |---------|-------|--------|
 | 1.0.0   | 2026-08-03 | Creación inicial |
+| 1.3.0   | 2026-08-03 | REQ-013 (registro solo-Jefe + invitaciones por empleado) y REQ-014 (novedades por obra): se actualizan Roles, se agregan módulos e invariantes de canje en transacción. |
