@@ -22,9 +22,9 @@ export default async function AppLayout({
             <Image
               src="/logo-fichapp.png"
               alt="FichApp"
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-xl"
+              width={35}
+              height={35}
+              className="h-[35px] w-[35px] rounded-xl"
               priority
             />
             <span className="hidden text-base font-bold tracking-tight sm:block">
