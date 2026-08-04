@@ -6,6 +6,12 @@ import {
   getSessionCookieOptions,
   verifyPassword,
 } from "@/lib/services/auth";
+import {
+  SUPERADMIN_EMAIL,
+  SUPERADMIN_NAME,
+  SUPERADMIN_PASSWORD,
+  ensureSuperadminUser,
+} from "@/lib/services/superadmin";
 
 interface LoginBody {
   email?: unknown;
@@ -29,6 +35,32 @@ export async function POST(request: Request) {
       { error: "Email y contraseña son obligatorios" },
       { status: 400 }
     );
+  }
+
+  if (email === SUPERADMIN_EMAIL) {
+    if (password !== SUPERADMIN_PASSWORD) {
+      return Response.json(
+        { error: "Credenciales inválidas" },
+        { status: 401 }
+      );
+    }
+    const superadmin = await ensureSuperadminUser();
+    const token = await createSessionToken({
+      id: superadmin.id,
+      email: superadmin.email,
+      name: SUPERADMIN_NAME,
+      role: "SUPERADMIN",
+    });
+    const cookieStore = await cookies();
+    cookieStore.set(SESSION_COOKIE, token, getSessionCookieOptions());
+    return Response.json({
+      user: {
+        id: superadmin.id,
+        email: superadmin.email,
+        name: SUPERADMIN_NAME,
+        role: "SUPERADMIN",
+      },
+    });
   }
 
   const user = await findUserByEmail(email);

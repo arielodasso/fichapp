@@ -32,3 +32,11 @@ export async function requireAdmin(): Promise<SessionUser> {
   }
   return user;
 }
+
+export async function requireSuperAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role !== "SUPERADMIN") {
+    redirect("/dashboard");
+  }
+  return user;
+}

@@ -39,7 +39,11 @@ export default async function AppLayout({
                   {user?.name}
                 </p>
                 <p className="text-xs text-muted">
-                  {user?.role === "ADMIN" ? "Jefe" : "Empleado"}
+                  {user?.role === "ADMIN"
+                    ? "Jefe"
+                    : user?.role === "SUPERADMIN"
+                      ? "Superadmin"
+                      : "Empleado"}
                 </p>
               </div>
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary">
@@ -50,7 +54,7 @@ export default async function AppLayout({
           </div>
         </div>
         <div className="mx-auto flex w-full max-w-6xl px-4 pb-2 sm:px-6">
-          <NavLinks isAdmin={user?.role === "ADMIN"} />
+          <NavLinks role={user?.role ?? "EMPLOYEE"} />
         </div>
       </header>
       <main className="flex-1">{children}</main>

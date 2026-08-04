@@ -6,23 +6,36 @@ import { cx } from "@/components/ui";
 import {
   BarChartIcon,
   BuildingIcon,
+  ClipboardCheckIcon,
   ClockIcon,
   HistoryIcon,
   LayoutGridIcon,
+  ShieldCheckIcon,
   UsersIcon,
 } from "@/components/icons";
+import type { UserRole } from "@/lib/services/auth";
 
-const links = [
+const links: Array<{
+  href: string;
+  label: string;
+  icon: (props: React.SVGProps<SVGSVGElement>) => React.ReactNode;
+  admin?: boolean;
+  superadmin?: boolean;
+}> = [
   { href: "/dashboard", label: "Inicio", icon: LayoutGridIcon },
-  { href: "/fichadas", label: "Fichadas", icon: ClockIcon, admin: false },
+  { href: "/fichadas", label: "Fichadas", icon: ClockIcon },
+  { href: "/tareas", label: "Tareas", icon: ClipboardCheckIcon },
   { href: "/empleados", label: "Empleados", icon: UsersIcon, admin: true },
-  { href: "/obras", label: "Obras", icon: BuildingIcon, admin: false },
+  { href: "/obras", label: "Obras", icon: BuildingIcon },
   { href: "/reportes", label: "Reportes", icon: BarChartIcon, admin: true },
   { href: "/periodos", label: "Períodos", icon: HistoryIcon, admin: true },
+  { href: "/superadmin", label: "Superadmin", icon: ShieldCheckIcon, superadmin: true },
 ];
 
-export function NavLinks({ isAdmin }: { isAdmin: boolean }) {
+export function NavLinks({ role }: { role: UserRole }) {
   const pathname = usePathname();
+  const isAdmin = role === "ADMIN";
+  const isSuperadmin = role === "SUPERADMIN";
 
   return (
     <nav
@@ -30,7 +43,7 @@ export function NavLinks({ isAdmin }: { isAdmin: boolean }) {
       className="-mx-4 flex items-center gap-1 overflow-x-auto px-4 sm:mx-0 sm:px-0"
     >
       {links
-        .filter((l) => !l.admin || isAdmin)
+        .filter((l) => (!l.admin || isAdmin) && (!l.superadmin || isSuperadmin))
         .map((l) => {
           const active =
             pathname === l.href || pathname.startsWith(`${l.href}/`);

@@ -7,13 +7,16 @@ import {
   ArrowRightIcon,
   BarChartIcon,
   BuildingIcon,
+  ClipboardCheckIcon,
   ClockIcon,
+  ShieldCheckIcon,
   UsersIcon,
 } from "@/components/icons";
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
+  const isSuperadmin = user.role === "SUPERADMIN";
 
   const reporte = isAdmin ? await getReporteSemanal(new Date(), user.id) : null;
 
@@ -31,6 +34,13 @@ export default async function DashboardPage() {
       text: "Registrá tu ingreso y egreso de hoy.",
       icon: ClockIcon,
       accent: "text-emerald-600 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-500/15",
+    },
+    {
+      href: "/tareas",
+      title: "Tareas",
+      text: "Creá, asigná y seguí las tareas de las obras.",
+      icon: ClipboardCheckIcon,
+      accent: "text-violet-600 bg-violet-100 dark:text-violet-300 dark:bg-violet-500/15",
     },
     {
       href: "/reportes",
@@ -55,7 +65,15 @@ export default async function DashboardPage() {
       icon: BuildingIcon,
       accent: "text-amber-600 bg-amber-100 dark:text-amber-300 dark:bg-amber-500/15",
     },
-  ].filter((l) => !l.admin || isAdmin);
+    {
+      href: "/superadmin",
+      title: "Panel de superadmin",
+      text: "Administrá usuarios y organizaciones del sistema.",
+      icon: ShieldCheckIcon,
+      accent: "text-rose-600 bg-rose-100 dark:text-rose-300 dark:bg-rose-500/15",
+      superadmin: true,
+    },
+  ].filter((l) => (!l.admin || isAdmin) && (!l.superadmin || isSuperadmin));
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 sm:p-6">
@@ -70,7 +88,7 @@ export default async function DashboardPage() {
               Hola, {user.name}
             </h1>
             <Badge tone="primary">
-              {isAdmin ? "Jefe" : "Empleado"}
+              {isAdmin ? "Jefe" : isSuperadmin ? "Superadmin" : "Empleado"}
             </Badge>
           </div>
           <p className="mt-1 text-sm text-muted">{user.email}</p>

@@ -97,7 +97,6 @@ describe("POST /api/empleados (REQ-001, REQ-015)", () => {
       apellido: "Pérez",
       documento: "30111222",
       rol: "OBRERO",
-      userId: null,
       obraIds: [
         "11111111-1111-4111-8111-111111111111",
         "22222222-2222-4222-8222-222222222222",
@@ -112,9 +111,9 @@ describe("POST /api/empleados (REQ-001, REQ-015)", () => {
     expect(json.invitacion.link).toBe("http://localhost/registro?invitacion=ABC123");
   });
 
-  it("no genera invitación cuando el empleado ya tiene usuario", async () => {
-    mocks.createEmpleado.mockResolvedValue({ id: "e-1", userId: "u-9" });
-    const res = await POST(
+  it("no recibe el campo userId (la vinculación es solo por invitación)", async () => {
+    mocks.createEmpleado.mockResolvedValue({ id: "e-1", userId: null });
+    await POST(
       jsonRequest({
         nombre: "Juan",
         apellido: "Pérez",
@@ -122,9 +121,12 @@ describe("POST /api/empleados (REQ-001, REQ-015)", () => {
         userId: "u-9",
       })
     );
-    expect(res.status).toBe(201);
-    expect(mocks.generarInvitacionEmpleado).not.toHaveBeenCalled();
-    expect(await res.json()).toMatchObject({ invitacion: null });
+    expect(mocks.createEmpleado).toHaveBeenCalledWith(
+      "u-1",
+      expect.objectContaining({})
+    );
+    const args = mocks.createEmpleado.mock.calls[0][1];
+    expect(args).not.toHaveProperty("userId");
   });
 
   it("rechaza obras asignadas inválidas (REQ-NF-002)", async () => {

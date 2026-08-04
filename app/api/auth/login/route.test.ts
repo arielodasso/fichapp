@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   findUserByEmail: vi.fn(),
+  createUser: vi.fn(),
+  updateUser: vi.fn(),
+  ensureSuperadminUser: vi.fn(),
   cookies: vi.fn(),
 }));
 
@@ -12,6 +15,14 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("@/lib/db/users", () => ({
   findUserByEmail: mocks.findUserByEmail,
+  createUser: mocks.createUser,
+  updateUser: mocks.updateUser,
+}));
+vi.mock("@/lib/services/superadmin", () => ({
+  SUPERADMIN_EMAIL: "superadmin@fichapp.com",
+  SUPERADMIN_NAME: "Superadmin",
+  SUPERADMIN_PASSWORD: "superadmin2026",
+  ensureSuperadminUser: mocks.ensureSuperadminUser,
 }));
 
 import { POST } from "./route";
@@ -73,5 +84,41 @@ describe("POST /api/auth/login (REQ-010)", () => {
       jsonRequest({ email: "nadie@example.com", password: "secreto123" })
     );
     expect(res.status).toBe(401);
+  });
+});
+
+describe("POST /api/auth/login · superadmin hardcodeado", () => {
+  beforeEach(() => {
+    mocks.ensureSuperadminUser.mockResolvedValue({
+      id: "s-1",
+      email: "superadmin@fichapp.com",
+      name: "Superadmin",
+      role: "SUPERADMIN",
+      passwordHash: "hash",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  });
+
+  it("inicia sesión como superadmin con las credenciales fijas", async () => {
+    const res = await POST(
+      jsonRequest({ email: "superadmin@fichapp.com", password: "superadmin2026" })
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.user).toMatchObject({
+      email: "superadmin@fichapp.com",
+      name: "Superadmin",
+      role: "SUPERADMIN",
+    });
+    expect(mocks.ensureSuperadminUser).toHaveBeenCalled();
+  });
+
+  it("rechaza una contraseña incorrecta del superadmin", async () => {
+    const res = await POST(
+      jsonRequest({ email: "superadmin@fichapp.com", password: "incorrecta" })
+    );
+    expect(res.status).toBe(401);
+    expect(mocks.ensureSuperadminUser).not.toHaveBeenCalled();
   });
 });

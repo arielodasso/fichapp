@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 
-export type UserRole = "ADMIN" | "EMPLOYEE";
+export type UserRole = "ADMIN" | "EMPLOYEE" | "SUPERADMIN";
 
 export interface SessionUser {
   id: string;
@@ -68,7 +68,7 @@ export async function verifySessionToken(
     !sub ||
     typeof email !== "string" ||
     typeof name !== "string" ||
-    (role !== "ADMIN" && role !== "EMPLOYEE")
+    (role !== "ADMIN" && role !== "EMPLOYEE" && role !== "SUPERADMIN")
   ) {
     throw new InvalidSessionError();
   }

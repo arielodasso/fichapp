@@ -8,7 +8,6 @@ interface EmpleadoBody {
   apellido?: unknown;
   documento?: unknown;
   rol?: unknown;
-  userId?: unknown;
   obraIds?: unknown;
 }
 
@@ -40,8 +39,6 @@ export async function POST(request: Request) {
   const documento =
     typeof body.documento === "string" ? body.documento.trim() : "";
   const rol = typeof body.rol === "string" ? body.rol.trim() : "OBRERO";
-  const userId =
-    typeof body.userId === "string" && body.userId.length > 0 ? body.userId : null;
 
   const obraIds = Array.isArray(body.obraIds) ? body.obraIds : [];
   if (obraIds.some((o) => typeof o !== "string" || !isValidUUID(o))) {
@@ -63,7 +60,6 @@ export async function POST(request: Request) {
     apellido,
     documento,
     rol,
-    userId,
     obraIds,
   });
 

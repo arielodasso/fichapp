@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createUser: vi.fn(),
   findUserByEmail: vi.fn(),
+  updateUser: vi.fn(),
   cookies: vi.fn(),
 }));
 
@@ -14,6 +15,7 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/db/users", () => ({
   createUser: mocks.createUser,
   findUserByEmail: mocks.findUserByEmail,
+  updateUser: mocks.updateUser,
 }));
 
 import { POST } from "./route";

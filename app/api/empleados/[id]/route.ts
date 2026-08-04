@@ -12,7 +12,6 @@ interface EmpleadoBody {
   documento?: unknown;
   rol?: unknown;
   activo?: unknown;
-  userId?: unknown;
   obraIds?: unknown;
 }
 
@@ -48,12 +47,6 @@ export async function PATCH(
   }
   if (typeof body.activo === "boolean") {
     input.activo = body.activo;
-  }
-  if ("userId" in body) {
-    input.userId =
-      typeof body.userId === "string" && body.userId.length > 0
-        ? body.userId
-        : null;
   }
   if ("obraIds" in body) {
     const obraIds = Array.isArray(body.obraIds) ? body.obraIds : [];

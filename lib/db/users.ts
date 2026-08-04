@@ -1,6 +1,6 @@
 import { pool } from "./client";
 
-export type UserRole = "ADMIN" | "EMPLOYEE";
+export type UserRole = "ADMIN" | "EMPLOYEE" | "SUPERADMIN";
 
 export interface User {
   id: string;
@@ -63,6 +63,46 @@ export async function findUserById(id: string): Promise<User | null> {
   const { rows } = await pool.query<UserRow>(
     `SELECT * FROM users WHERE id = $1`,
     [id]
+  );
+  return rows[0] ? mapUser(rows[0]) : null;
+}
+
+export async function listAllUsers(): Promise<User[]> {
+  const { rows } = await pool.query<UserRow>(
+    `SELECT * FROM users ORDER BY created_at ASC, name ASC`
+  );
+  return rows.map(mapUser);
+}
+
+export async function updateUser(
+  id: string,
+  input: { name?: string; email?: string; role?: UserRole }
+): Promise<User | null> {
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  let i = 1;
+
+  if (input.name !== undefined) {
+    sets.push(`name = $${i++}`);
+    values.push(input.name);
+  }
+  if (input.email !== undefined) {
+    sets.push(`email = $${i++}`);
+    values.push(input.email);
+  }
+  if (input.role !== undefined) {
+    sets.push(`role = $${i++}`);
+    values.push(input.role);
+  }
+  if (sets.length === 0) {
+    return findUserById(id);
+  }
+
+  sets.push(`updated_at = now()`);
+  values.push(id);
+  const { rows } = await pool.query<UserRow>(
+    `UPDATE users SET ${sets.join(", ")} WHERE id = $${i} RETURNING *`,
+    values
   );
   return rows[0] ? mapUser(rows[0]) : null;
 }

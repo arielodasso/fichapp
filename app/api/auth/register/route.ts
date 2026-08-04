@@ -6,6 +6,7 @@ import {
   getSessionCookieOptions,
   hashPassword,
 } from "@/lib/services/auth";
+import { SUPERADMIN_EMAIL } from "@/lib/services/superadmin";
 
 interface RegisterBody {
   name?: unknown;
@@ -29,6 +30,13 @@ export async function POST(request: Request) {
   if (!name || !email || !email.includes("@") || password.length < 8) {
     return Response.json(
       { error: "Datos inválidos: nombre, email válido y contraseña (mín. 8 caracteres)" },
+      { status: 400 }
+    );
+  }
+
+  if (email === SUPERADMIN_EMAIL) {
+    return Response.json(
+      { error: "Ese email no se puede registrar" },
       { status: 400 }
     );
   }

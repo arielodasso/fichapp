@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
@@ -9,6 +9,10 @@ const display = Plus_Jakarta_Sans({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#059669",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "FichApp · Fichero de Empleados y Obras",
@@ -17,8 +21,11 @@ export const metadata: Metadata = {
   description:
     "Registro de ingreso/egreso y reporte semanal de horas por obra",
   manifest: "/manifest.webmanifest",
-  themeColor: "#059669",
   icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
 };

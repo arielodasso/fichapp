@@ -10,10 +10,25 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   name          TEXT NOT NULL,
   role          TEXT NOT NULL DEFAULT 'EMPLOYEE'
-                CHECK (role IN ('ADMIN', 'EMPLOYEE')),
+                CHECK (role IN ('ADMIN', 'EMPLOYEE', 'SUPERADMIN')),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- El rol SUPERADMIN se integra de forma fija (credenciales hardcodeadas).
+-- En bases existentes, el CHECK anterior solo admitía ADMIN/EMPLOYEE.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conname = 'users_role_check'
+       AND pg_get_constraintdef(oid) NOT LIKE '%SUPERADMIN%'
+  ) THEN
+    ALTER TABLE users DROP CONSTRAINT users_role_check;
+    ALTER TABLE users ADD CONSTRAINT users_role_check
+      CHECK (role IN ('ADMIN', 'EMPLOYEE', 'SUPERADMIN'));
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS empleados (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,3 +149,25 @@ BEGIN
     ALTER TABLE empleados ADD CONSTRAINT empleados_jefe_documento_unique UNIQUE (jefe_id, documento);
   END IF;
 END $$;
+
+-- === Tareas (REQ-020) ===
+-- El jefe crea y asigna tareas a empleados, opcionalmente por obra.
+-- El empleado solo ve las tareas que tiene asignadas y puede avanzar su estado.
+CREATE TABLE IF NOT EXISTS tareas (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  jefe_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  obra_id       UUID REFERENCES obras(id) ON DELETE CASCADE,
+  empleado_id   UUID NOT NULL REFERENCES empleados(id) ON DELETE CASCADE,
+  titulo        TEXT NOT NULL,
+  descripcion   TEXT,
+  estado        TEXT NOT NULL DEFAULT 'PENDIENTE'
+                CHECK (estado IN ('PENDIENTE', 'EN_PROGRESO', 'COMPLETADA')),
+  creado_por    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  completada_en TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tareas_jefe     ON tareas (jefe_id);
+CREATE INDEX IF NOT EXISTS idx_tareas_empleado ON tareas (empleado_id, estado);
+CREATE INDEX IF NOT EXISTS idx_tareas_obra     ON tareas (obra_id);

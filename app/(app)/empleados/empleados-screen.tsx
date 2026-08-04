@@ -37,7 +37,6 @@ interface EmpleadoView {
 
 interface EmpleadosScreenProps {
   empleados: EmpleadoView[];
-  usuarios: { id: string; email: string; name: string }[];
   obras: { id: string; nombre: string }[];
   invitaciones: Record<string, { id: string; codigo: string; expiraEn: string }>;
   horasTotales: Record<string, number>;
@@ -45,7 +44,6 @@ interface EmpleadosScreenProps {
 
 export function EmpleadosScreen({
   empleados,
-  usuarios,
   obras,
   invitaciones,
   horasTotales,
@@ -57,7 +55,6 @@ export function EmpleadosScreen({
   const [apellido, setApellido] = useState("");
   const [documento, setDocumento] = useState("");
   const [rol, setRol] = useState("OBRERO");
-  const [userId, setUserId] = useState("");
   const [obraIds, setObraIds] = useState<string[]>([]);
   const [activo, setActivo] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +71,6 @@ export function EmpleadosScreen({
     setApellido("");
     setDocumento("");
     setRol("OBRERO");
-    setUserId("");
     setObraIds([]);
     setActivo(true);
     setError(null);
@@ -87,7 +83,6 @@ export function EmpleadosScreen({
     setApellido(e.apellido);
     setDocumento(e.documento);
     setRol(e.rol);
-    setUserId(e.userId ?? "");
     setObraIds(e.obraIds);
     setActivo(e.activo);
     setError(null);
@@ -113,7 +108,6 @@ export function EmpleadosScreen({
         apellido: apellido.trim(),
         documento: documento.trim(),
         rol: rol.trim(),
-        userId: userId || null,
         obraIds,
         ...(editing ? { activo } : {}),
       });
@@ -246,21 +240,6 @@ export function EmpleadosScreen({
                 onChange={(e) => setRol(e.target.value)}
                 className={inputClass}
               />
-            </label>
-            <label className={cx(fieldClass, "sm:col-span-2")}>
-              Usuario vinculado
-              <select
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Sin usuario</option>
-                {usuarios.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} · {u.email}
-                  </option>
-                ))}
-              </select>
             </label>
             <fieldset className={cx(fieldClass, "sm:col-span-2")}>
               <legend>Obras asignadas</legend>

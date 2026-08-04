@@ -237,3 +237,12 @@ export function MoonIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function ClipboardCheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="6" y="3" width="12" height="18" rx="2" />
+      <path d="M9 3h6v3H9zM9 12l2 2 4-4" />
+    </Svg>
+  );
+}
