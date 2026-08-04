@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   },
   description:
     "Registro de ingreso/egreso y reporte semanal de horas por obra",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#059669",
+  icons: {
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("fichapp-theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})()`;
