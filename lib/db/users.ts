@@ -80,10 +80,3 @@ export async function countUsers(): Promise<number> {
   );
   return Number(rows[0].count);
 }
-
-export async function countAdmins(): Promise<number> {
-  const { rows } = await pool.query<{ count: string }>(
-    `SELECT count(*)::text AS count FROM users WHERE role = 'ADMIN'`
-  );
-  return Number(rows[0].count);
-}

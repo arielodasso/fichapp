@@ -13,6 +13,7 @@ interface EmpleadoBody {
   rol?: unknown;
   activo?: unknown;
   userId?: unknown;
+  obraIds?: unknown;
 }
 
 export async function PATCH(
@@ -53,6 +54,16 @@ export async function PATCH(
       typeof body.userId === "string" && body.userId.length > 0
         ? body.userId
         : null;
+  }
+  if ("obraIds" in body) {
+    const obraIds = Array.isArray(body.obraIds) ? body.obraIds : [];
+    if (obraIds.some((o) => typeof o !== "string" || !isValidUUID(o))) {
+      return Response.json(
+        { error: "Obras asignadas inválidas" },
+        { status: 400 }
+      );
+    }
+    input.obraIds = obraIds;
   }
 
   const empleado = await updateEmpleado(id, input);

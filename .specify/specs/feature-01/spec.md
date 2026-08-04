@@ -38,8 +38,9 @@ Cada requerimiento es claro, explícito y rastreable. Se referencian desde
 | REQ-010 | Autenticación de usuarios (email + contraseña) para acceso a la aplicación. | Alta |
 | REQ-011 | Persistir todos los datos (empleados, obras, fichadas, usuarios) de forma duradera. | Alta |
 | REQ-012 | Corregir/eliminar un período de trabajo erróneo (solo por el jefe, dejando registro de la corrección). | Media |
-| REQ-013 | El registro público solo crea cuentas de **jefe** (bootstrap del primer usuario). Los empleados se incorporan mediante **invitaciones** generadas por el jefe, por empleado, con enlace de uso único y vencimiento (30 días). | Alta |
+| REQ-013 | El registro público está **abierto**: cualquier usuario puede crear su cuenta de **jefe** en cualquier momento. Los empleados se incorporan mediante **invitaciones** generadas por el jefe, por empleado, con enlace de uso único y vencimiento (30 días). Al crear un empleado sin usuario, el sistema genera y muestra su enlace de invitación de forma automática. | Alta |
 | REQ-014 | Novedades/comentarios por obra: empleados y jefes pueden publicar y eliminar novedades (máx. 500 caracteres); cada novedad muestra autor y fecha. | Alta |
+| REQ-015 | Asignar obras específicas a cada empleado (relación muchos a muchos): el jefe elige las obras en la creación/edición del empleado; las asignaciones se persisten en la base de datos (Neon) y se muestran en la lista de empleados. | Alta |
 
 ### 2.2 Requerimientos no funcionales
 
@@ -66,11 +67,15 @@ Criterios verificables que definen la "Definition of Done" de este feature
       agrupadas por semana (lunes a domingo).
 - [ ] Un usuario sin rol de jefe no accede a la administración ni a los
       reportes.
-- [ ] El primer usuario registrado en la app pública queda como jefe; con un
-      jefe existente el registro público se cierra (403) y se muestra la
-      pantalla de ingreso (REQ-013).
+- [ ] El registro público está abierto: cualquier usuario puede crear su cuenta
+      de jefe (ADMIN) en cualquier momento (REQ-013).
 - [ ] El jefe genera un enlace de invitación por empleado; el enlace es único,
-      vence a los 30 días y crea la cuenta de empleado al ser usado (REQ-013).
+      vence a los 30 días y crea la cuenta de empleado al ser usado. Al crear un
+      empleado sin usuario, el enlace se genera y muestra automáticamente
+      (REQ-013).
+- [ ] El jefe asigna obras específicas a cada empleado al crearlo o editarlo;
+      las asignaciones persisten en la base de datos y se muestran en la lista
+      de empleados (REQ-015).
 - [ ] Un empleado o el jefe publica una novedad en una obra y puede eliminarla;
       se rechazan novedades vacías o de más de 500 caracteres (REQ-014).
 - [ ] La aplicación se despliega en Vercel y funciona con la base de datos en
@@ -129,3 +134,4 @@ Describir los módulos/componentes a crear o modificar y sus responsabilidades:
 |---------|-------|--------|
 | 1.0.0   | 2026-08-03 | Creación inicial |
 | 1.1.0   | 2026-08-03 | Rebrand a FichApp; REQ-013 (invitaciones por empleado) y REQ-014 (novedades por obra) |
+| 1.2.0   | 2026-08-03 | REQ-013 modificado (registro de jefes abierto, sin bootstrap 403); REQ-015: asignación de obras por empleado (muchos a muchos) con enlace de invitación automático al crear el empleado y persistencia en Neon |

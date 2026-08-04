@@ -8,6 +8,7 @@ export interface Empleado {
   rol: string;
   activo: boolean;
   userId: string | null;
+  obraIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,6 +19,7 @@ export interface CreateEmpleadoInput {
   documento: string;
   rol?: string;
   userId?: string | null;
+  obraIds?: string[];
 }
 
 export interface UpdateEmpleadoInput {
@@ -27,6 +29,7 @@ export interface UpdateEmpleadoInput {
   rol?: string;
   activo?: boolean;
   userId?: string | null;
+  obraIds?: string[];
 }
 
 interface EmpleadoRow {
@@ -41,7 +44,7 @@ interface EmpleadoRow {
   updated_at: Date;
 }
 
-function mapEmpleado(row: EmpleadoRow): Empleado {
+function mapEmpleado(row: EmpleadoRow, obraIds: string[] = []): Empleado {
   return {
     id: row.id,
     nombre: row.nombre,
@@ -50,9 +53,53 @@ function mapEmpleado(row: EmpleadoRow): Empleado {
     rol: row.rol,
     activo: row.activo,
     userId: row.user_id,
+    obraIds,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+async function fetchObraIds(empleadoIds: string[]): Promise<Map<string, string[]>> {
+  if (empleadoIds.length === 0) {
+    return new Map();
+  }
+  const { rows } = await pool.query<{ empleado_id: string; obra_id: string }>(
+    `SELECT empleado_id, obra_id FROM empleado_obras
+     WHERE empleado_id = ANY($1)`,
+    [empleadoIds]
+  );
+  const porEmpleado = new Map<string, string[]>();
+  for (const r of rows) {
+    const lista = porEmpleado.get(r.empleado_id) ?? [];
+    lista.push(r.obra_id);
+    porEmpleado.set(r.empleado_id, lista);
+  }
+  return porEmpleado;
+}
+
+export async function asignarObrasEmpleado(
+  empleadoId: string,
+  obraIds: string[]
+): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(`DELETE FROM empleado_obras WHERE empleado_id = $1`, [
+      empleadoId,
+    ]);
+    for (const obraId of obraIds) {
+      await client.query(
+        `INSERT INTO empleado_obras (empleado_id, obra_id) VALUES ($1, $2)`,
+        [empleadoId, obraId]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 export async function createEmpleado(
@@ -64,7 +111,13 @@ export async function createEmpleado(
      RETURNING *`,
     [input.nombre, input.apellido, input.documento, input.rol ?? "OBRERO", input.userId ?? null]
   );
-  return mapEmpleado(rows[0]);
+  const empleado = mapEmpleado(rows[0]);
+  const obraIds = input.obraIds ?? [];
+  if (obraIds.length > 0) {
+    await asignarObrasEmpleado(empleado.id, obraIds);
+    empleado.obraIds = obraIds;
+  }
+  return empleado;
 }
 
 export async function listEmpleados(options?: {
@@ -76,7 +129,8 @@ export async function listEmpleados(options?: {
      ORDER BY apellido ASC, nombre ASC`,
     [options?.soloActivos ?? null]
   );
-  return rows.map(mapEmpleado);
+  const obraIds = await fetchObraIds(rows.map((r) => r.id));
+  return rows.map((r) => mapEmpleado(r, obraIds.get(r.id) ?? []));
 }
 
 export async function findEmpleadoById(id: string): Promise<Empleado | null> {
@@ -84,7 +138,9 @@ export async function findEmpleadoById(id: string): Promise<Empleado | null> {
     `SELECT * FROM empleados WHERE id = $1`,
     [id]
   );
-  return rows[0] ? mapEmpleado(rows[0]) : null;
+  if (!rows[0]) return null;
+  const obraIds = await fetchObraIds([id]);
+  return mapEmpleado(rows[0], obraIds.get(id) ?? []);
 }
 
 export async function findEmpleadoByUserId(
@@ -94,7 +150,9 @@ export async function findEmpleadoByUserId(
     `SELECT * FROM empleados WHERE user_id = $1`,
     [userId]
   );
-  return rows[0] ? mapEmpleado(rows[0]) : null;
+  if (!rows[0]) return null;
+  const obraIds = await fetchObraIds([rows[0].id]);
+  return mapEmpleado(rows[0], obraIds.get(rows[0].id) ?? []);
 }
 
 export async function updateEmpleado(
@@ -130,18 +188,25 @@ export async function updateEmpleado(
     values.push(input.userId);
   }
 
+  let empleado: Empleado | null = null;
   if (sets.length === 0) {
-    return findEmpleadoById(id);
+    empleado = await findEmpleadoById(id);
+  } else {
+    sets.push(`updated_at = now()`);
+    values.push(id);
+    const { rows } = await pool.query<EmpleadoRow>(
+      `UPDATE empleados SET ${sets.join(", ")} WHERE id = $${i} RETURNING *`,
+      values
+    );
+    empleado = rows[0] ? mapEmpleado(rows[0]) : null;
   }
 
-  sets.push(`updated_at = now()`);
-  values.push(id);
+  if (empleado && input.obraIds !== undefined) {
+    await asignarObrasEmpleado(id, input.obraIds);
+    empleado.obraIds = input.obraIds;
+  }
 
-  const { rows } = await pool.query<EmpleadoRow>(
-    `UPDATE empleados SET ${sets.join(", ")} WHERE id = $${i} RETURNING *`,
-    values
-  );
-  return rows[0] ? mapEmpleado(rows[0]) : null;
+  return empleado;
 }
 
 export async function deactivateEmpleado(id: string): Promise<Empleado | null> {

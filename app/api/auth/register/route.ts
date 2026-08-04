@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { countAdmins, createUser, findUserByEmail } from "@/lib/db/users";
+import { createUser, findUserByEmail } from "@/lib/db/users";
 import {
   SESSION_COOKIE,
   createSessionToken,
@@ -37,19 +37,6 @@ export async function POST(request: Request) {
     return Response.json(
       { error: "El email ya está registrado" },
       { status: 409 }
-    );
-  }
-
-  const admins = await countAdmins();
-  if (admins > 0) {
-    // El registro público crea exclusivamente al jefe inicial (bootstrap).
-    // Los empleados se registran mediante enlaces de invitación (REQ-013).
-    return Response.json(
-      {
-        error:
-          "El registro público está cerrado. Si sos empleado, usá el enlace de invitación que te envió el jefe.",
-      },
-      { status: 403 }
     );
   }
 

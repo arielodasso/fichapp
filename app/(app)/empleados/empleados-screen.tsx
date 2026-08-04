@@ -31,17 +31,20 @@ interface EmpleadoView {
   rol: string;
   activo: boolean;
   userId: string | null;
+  obraIds: string[];
 }
 
 interface EmpleadosScreenProps {
   empleados: EmpleadoView[];
   usuarios: { id: string; email: string; name: string }[];
+  obras: { id: string; nombre: string }[];
   invitaciones: Record<string, { id: string; codigo: string; expiraEn: string }>;
 }
 
 export function EmpleadosScreen({
   empleados,
   usuarios,
+  obras,
   invitaciones,
 }: EmpleadosScreenProps) {
   const router = useRouter();
@@ -52,6 +55,7 @@ export function EmpleadosScreen({
   const [documento, setDocumento] = useState("");
   const [rol, setRol] = useState("OBRERO");
   const [userId, setUserId] = useState("");
+  const [obraIds, setObraIds] = useState<string[]>([]);
   const [activo, setActivo] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -68,6 +72,7 @@ export function EmpleadosScreen({
     setDocumento("");
     setRol("OBRERO");
     setUserId("");
+    setObraIds([]);
     setActivo(true);
     setError(null);
     setFormOpen(true);
@@ -80,6 +85,7 @@ export function EmpleadosScreen({
     setDocumento(e.documento);
     setRol(e.rol);
     setUserId(e.userId ?? "");
+    setObraIds(e.obraIds);
     setActivo(e.activo);
     setError(null);
     setFormOpen(true);
@@ -105,6 +111,7 @@ export function EmpleadosScreen({
         documento: documento.trim(),
         rol: rol.trim(),
         userId: userId || null,
+        obraIds,
         ...(editing ? { activo } : {}),
       });
       const res = await fetch(
@@ -119,6 +126,13 @@ export function EmpleadosScreen({
       if (!res.ok) {
         setError(json.error ?? "Error inesperado");
         return;
+      }
+      if (!editing && json.invitacion?.link) {
+        setInvitacionBanner({
+          nombre: `${json.empleado?.nombre ?? nombre.trim()} ${json.empleado?.apellido ?? apellido.trim()}`,
+          link: json.invitacion.link,
+        });
+        setCopiado(false);
       }
       close();
       router.refresh();
@@ -245,6 +259,41 @@ export function EmpleadosScreen({
                 ))}
               </select>
             </label>
+            <fieldset className={cx(fieldClass, "sm:col-span-2")}>
+              <legend>Obras asignadas</legend>
+              {obras.length === 0 ? (
+                <p className="text-sm font-normal text-muted">
+                  No hay obras cargadas todavía. Creá obras para asignarlas a
+                  los empleados.
+                </p>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {obras.map((o) => {
+                    const checked = obraIds.includes(o.id);
+                    return (
+                      <label
+                        key={o.id}
+                        className="flex items-center gap-2 text-sm font-normal text-foreground"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() =>
+                            setObraIds((prev) =>
+                              checked
+                                ? prev.filter((id) => id !== o.id)
+                                : [...prev, o.id]
+                            )
+                          }
+                          className="h-4 w-4 rounded border-line accent-indigo-600"
+                        />
+                        {o.nombre}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </fieldset>
             {editing && (
               <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <input
@@ -341,6 +390,7 @@ export function EmpleadosScreen({
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Documento</th>
                   <th className="px-4 py-3">Rol</th>
+                  <th className="px-4 py-3">Obras</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3 text-right">Acciones</th>
                 </tr>
@@ -365,6 +415,22 @@ export function EmpleadosScreen({
                       {e.documento}
                     </td>
                     <td className="px-4 py-3 text-foreground">{e.rol}</td>
+                    <td className="px-4 py-3">
+                      {e.obraIds.length === 0 ? (
+                        <span className="text-xs text-muted">Sin obras</span>
+                      ) : (
+                        <div className="flex max-w-64 flex-wrap gap-1">
+                          {e.obraIds.map((oid) => {
+                            const obra = obras.find((o) => o.id === oid);
+                            return obra ? (
+                              <Badge key={oid} tone="neutral">
+                                {obra.nombre}
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       {e.activo ? (
                         <Badge tone="success">Activo</Badge>

@@ -131,13 +131,11 @@
   - Requerimiento: REQ-013
   - Dependencias: TASK-002, TASK-003
 
-- [x] TASK-016 · `completed` · **Registro por invitación y cierre del registro público**
-  - `app/api/auth/register` reescrito: crea Jefe solo si `countAdmins() === 0`,
-    si no responde 403.
+- [x] TASK-016 · `completed` · **Registro por invitación y registro público abierto**
   - `app/api/auth/registro-invitado`: valida el código y vincula el empleado
     dentro de una transacción.
-  - Páginas `app/(auth)/registro/*` (validación del enlace) y login con alerta
-    de registro cerrado.
+  - Páginas `app/(auth)/registro/*` (validación del enlace) y login con
+    pestaña de registro.
   - Requerimiento: REQ-009, REQ-010, REQ-013
   - Dependencias: TASK-015
 
@@ -174,6 +172,43 @@
   - Requerimiento: REQ-NF-001, REQ-013, REQ-014
   - Dependencias: TASK-019
 
+### Fase 8: Registro abierto y asignación de obras por empleado (REQ-013, REQ-015)
+
+- [x] TASK-021 · `completed` · **Registro de jefes abierto y asignación de obras a empleados**
+  - `app/api/auth/register`: se elimina el bootstrap (`countAdmins`) — el
+    registro público crea siempre una cuenta `ADMIN` en cualquier momento.
+  - Login sin alerta de "registro cerrado"; eliminada `countAdmins()` de
+    `lib/db/users.ts`.
+  - Tabla `empleado_obras` (muchos a muchos) en `lib/db/schema.sql` + migración
+    aplicada en Neon.
+  - `lib/db/empleados.ts`: `obraIds` en `Empleado`/inputs, `fetchObraIds` y
+    `asignarObrasEmpleado` (reemplazo transaccional).
+  - `lib/db/obras.ts`: `listObrasDeEmpleado`.
+  - `lib/services/invitaciones.ts`: `generarInvitacionEmpleado` (reutiliza
+    pendientes, genera link absoluto).
+  - `app/api/empleados`: POST acepta `obraIds` y devuelve el enlace de
+    invitación automático al crear empleado sin usuario; PATCH acepta `obraIds`.
+  - Pantalla de empleados: selector de obras por empleado, badges por fila y
+    banner con enlace copiable al crear.
+  - Requerimiento: REQ-013, REQ-015
+  - Dependencias: TASK-007, TASK-015, TASK-017
+
+- [x] TASK-022 · `completed` · **Pruebas y verificación de persistencia** (P2)
+  - Tests de `app/api/empleados` (obraIds, enlace automático, sin enlace con
+    usuario) y `app/api/auth/register` (registro abierto, sin 403).
+  - Verificación en vivo contra Neon: CRUD de obras y asignación/re-asignación
+    de obras a empleados persisten correctamente.
+  - `lint`, `typecheck`, `test` (105 tests) y `build` aprobados.
+  - Requerimiento: REQ-013, REQ-015, REQ-NF-005
+  - Dependencias: TASK-021
+
+- [ ] TASK-023 · `pending` · **Deploy y smoke test (registro abierto + obras por empleado)**
+  - Commit + push a `master`, deploy en Vercel (`fichapp-one.vercel.app`).
+  - Smoke test en producción: registro público 201; creación de empleado con
+    obras y enlace de invitación; persistencia en Neon.
+  - Requerimiento: REQ-NF-001, REQ-013, REQ-015
+  - Dependencias: TASK-022
+
 ## Notas
 
 - Ninguna tarea se marca `completed` sin pasar las validaciones (P2).
@@ -190,3 +225,4 @@
 | 1.2.0   | 2026-08-03 | Rediseño integral de UI (Soft UI Evolution): design tokens claro/oscuro en `globals.css`, tipografía Plus Jakarta Sans, primitivos en `components/ui.tsx`, iconos SVG en `components/icons.tsx`, nueva navegación con estados activos, login split-screen, dashboard con resumen semanal y accesos rápidos, y pantallas fichadas/empleados/obras/reportes/períodos rediseñadas. Validado con lint, typecheck, 72 tests y build. |
 | 1.3.0   | 2026-08-03 | REQ-013 y REQ-014: registro público solo-Jefe con invitaciones por empleado (enlace único, 30 días) y novedades por obra (máx. 500 caracteres). Rebranch a FichApp en metadata, login, registro y navegación. TASK-015…TASK-019 completadas; validado con lint, typecheck, 97 tests y build. TASK-020 (deploy) pendiente. |
 | 1.4.0   | 2026-08-03 | TASK-020 completada: deploy en Vercel (`fichapp-one.vercel.app`) y smoke test en producción aprobado (login/registro 200, registro público 403, código inválido 400). |
+| 1.5.0   | 2026-08-03 | REQ-013 modificado: registro de jefes abierto (se elimina el bootstrap 403, `countAdmins`). REQ-015: asignación de obras por empleado (tabla `empleado_obras`, `obraIds`, selector y badges en UI, enlace de invitación automático al crear el empleado). TASK-021 y TASK-022 completadas (105 tests, verificación CRUD en vivo contra Neon). TASK-023 (deploy) pendiente. |

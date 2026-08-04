@@ -80,6 +80,17 @@ CREATE TABLE IF NOT EXISTS invitaciones (
 CREATE INDEX IF NOT EXISTS idx_invitaciones_codigo   ON invitaciones (codigo);
 CREATE INDEX IF NOT EXISTS idx_invitaciones_empleado ON invitaciones (empleado_id);
 
+-- Asignación de obras a empleados (muchos a muchos): el jefe habilita obras
+-- específicas para cada empleado (REQ-015). Solo se pueden fichar obras asignadas.
+CREATE TABLE IF NOT EXISTS empleado_obras (
+  empleado_id UUID NOT NULL REFERENCES empleados(id) ON DELETE CASCADE,
+  obra_id     UUID NOT NULL REFERENCES obras(id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (empleado_id, obra_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_empleado_obras_obra ON empleado_obras (obra_id);
+
 -- Novedades/comentarios de obra (REQ-014): notas de los empleados vinculadas a la obra.
 CREATE TABLE IF NOT EXISTS novedades_obra (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),

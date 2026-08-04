@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   finDeSemana,
+  formatearFechaLocal,
   generarReporteSemanal,
   inicioDeSemana,
+  sumarSemanas,
   type PeriodoReporte,
 } from "./reportes";
 
@@ -18,6 +20,36 @@ function periodo(overrides: Partial<PeriodoReporte>): PeriodoReporte {
     ...overrides,
   };
 }
+
+describe("reportes: navegación de semanas (Anterior/Siguiente)", () => {
+  it("formatea una fecha local como YYYY-MM-DD", () => {
+    expect(formatearFechaLocal(new Date(2026, 7, 3))).toBe("2026-08-03");
+  });
+
+  it("suma 7 días al avanzar una semana", () => {
+    expect(sumarSemanas("2026-08-03", 1)).toBe("2026-08-10");
+  });
+
+  it("resta 7 días al retroceder una semana", () => {
+    expect(sumarSemanas("2026-08-03", -1)).toBe("2026-07-27");
+  });
+
+  it("mantiene el día lunes al navegar (no se desplaza por zona horaria)", () => {
+    const lunesAnterior = sumarSemanas("2026-08-03", -1);
+    const dia = new Date(`${lunesAnterior}T00:00:00`).getDay();
+    expect(dia).toBe(1);
+  });
+
+  it("devuelve la fecha original ante un formato inválido", () => {
+    expect(sumarSemanas("no-es-fecha", 1)).toBe("no-es-fecha");
+  });
+
+  it("el enlace siguiente apunta al lunes de la semana que sigue", () => {
+    const inicio = "2026-08-03";
+    const siguiente = sumarSemanas(inicio, 1);
+    expect(inicioDeSemana(new Date(`${siguiente}T00:00:00`)).getDate()).toBe(10);
+  });
+});
 
 describe("reportes: límites de la semana (lunes a domingo)", () => {
   it("el inicio de semana de un miércoles cae en el lunes anterior", () => {

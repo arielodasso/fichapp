@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   listEmpleados: vi.fn(),
   createEmpleado: vi.fn(),
+  generarInvitacionEmpleado: vi.fn(),
 }));
 
 vi.mock("@/lib/services/current-user", () => ({
@@ -14,6 +15,9 @@ vi.mock("@/lib/services/current-user", () => ({
 vi.mock("@/lib/db/empleados", () => ({
   listEmpleados: mocks.listEmpleados,
   createEmpleado: mocks.createEmpleado,
+}));
+vi.mock("@/lib/services/invitaciones", () => ({
+  generarInvitacionEmpleado: mocks.generarInvitacionEmpleado,
 }));
 
 import { GET, POST } from "./route";
@@ -51,14 +55,24 @@ describe("GET /api/empleados (REQ-001)", () => {
   });
 });
 
-describe("POST /api/empleados (REQ-001)", () => {
-  it("crea un empleado con los datos mínimos", async () => {
-    mocks.createEmpleado.mockResolvedValue({ id: "e-1" });
+describe("POST /api/empleados (REQ-001, REQ-015)", () => {
+  it("crea un empleado, asigna obras y genera su enlace de invitación", async () => {
+    mocks.createEmpleado.mockResolvedValue({ id: "e-1", userId: null });
+    mocks.generarInvitacionEmpleado.mockResolvedValue({
+      id: "inv-1",
+      codigo: "ABC123",
+      expiraEn: "2026-09-01T00:00:00.000Z",
+      link: "http://localhost/registro?invitacion=ABC123",
+    });
     const res = await POST(
       jsonRequest({
         nombre: "Juan",
         apellido: "Pérez",
         documento: "30111222",
+        obraIds: [
+          "11111111-1111-4111-8111-111111111111",
+          "22222222-2222-4222-8222-222222222222",
+        ],
       })
     );
     expect(res.status).toBe(201);
@@ -68,7 +82,46 @@ describe("POST /api/empleados (REQ-001)", () => {
       documento: "30111222",
       rol: "OBRERO",
       userId: null,
+      obraIds: [
+        "11111111-1111-4111-8111-111111111111",
+        "22222222-2222-4222-8222-222222222222",
+      ],
     });
+    expect(mocks.generarInvitacionEmpleado).toHaveBeenCalledWith(
+      "e-1",
+      "u-1",
+      "http://localhost"
+    );
+    const json = await res.json();
+    expect(json.invitacion.link).toBe("http://localhost/registro?invitacion=ABC123");
+  });
+
+  it("no genera invitación cuando el empleado ya tiene usuario", async () => {
+    mocks.createEmpleado.mockResolvedValue({ id: "e-1", userId: "u-9" });
+    const res = await POST(
+      jsonRequest({
+        nombre: "Juan",
+        apellido: "Pérez",
+        documento: "30111222",
+        userId: "u-9",
+      })
+    );
+    expect(res.status).toBe(201);
+    expect(mocks.generarInvitacionEmpleado).not.toHaveBeenCalled();
+    expect(await res.json()).toMatchObject({ invitacion: null });
+  });
+
+  it("rechaza obras asignadas inválidas (REQ-NF-002)", async () => {
+    const res = await POST(
+      jsonRequest({
+        nombre: "Juan",
+        apellido: "Pérez",
+        documento: "30111222",
+        obraIds: ["no-es-uuid"],
+      })
+    );
+    expect(res.status).toBe(400);
+    expect(mocks.createEmpleado).not.toHaveBeenCalled();
   });
 
   it("rechaza un empleado sin documento (REQ-NF-002)", async () => {

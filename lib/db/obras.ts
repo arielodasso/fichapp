@@ -77,6 +77,18 @@ export async function findObraById(id: string): Promise<Obra | null> {
   return rows[0] ? mapObra(rows[0]) : null;
 }
 
+export async function listObrasDeEmpleado(empleadoId: string): Promise<Obra[]> {
+  const { rows } = await pool.query<ObraRow>(
+    `SELECT o.*
+     FROM obras o
+     JOIN empleado_obras eo ON eo.obra_id = o.id
+     WHERE eo.empleado_id = $1 AND o.activo = true
+     ORDER BY o.nombre ASC`,
+    [empleadoId]
+  );
+  return rows.map(mapObra);
+}
+
 export async function updateObra(
   id: string,
   input: UpdateObraInput

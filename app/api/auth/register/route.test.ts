@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   createUser: vi.fn(),
   findUserByEmail: vi.fn(),
-  countAdmins: vi.fn(),
   cookies: vi.fn(),
 }));
 
@@ -15,7 +14,6 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/db/users", () => ({
   createUser: mocks.createUser,
   findUserByEmail: mocks.findUserByEmail,
-  countAdmins: mocks.countAdmins,
 }));
 
 import { POST } from "./route";
@@ -33,7 +31,6 @@ beforeEach(() => {
   process.env.JWT_SECRET = "secreto-de-prueba-con-suficiente-entropia";
   mocks.cookies.mockResolvedValue({ set: vi.fn(), get: vi.fn() });
   mocks.findUserByEmail.mockResolvedValue(null);
-  mocks.countAdmins.mockResolvedValue(0);
   mocks.createUser.mockImplementation(
     (input: {
       email: string;
@@ -70,7 +67,6 @@ describe("POST /api/auth/register (REQ-009, REQ-010)", () => {
   });
 
   it("crea siempre una cuenta de jefe (el rol no es seleccionable)", async () => {
-    mocks.countAdmins.mockResolvedValue(0);
     const res = await POST(
       jsonRequest({
         name: "Jefe",
@@ -84,8 +80,7 @@ describe("POST /api/auth/register (REQ-009, REQ-010)", () => {
     );
   });
 
-  it("rechaza el registro público cuando ya existe un jefe (REQ-013)", async () => {
-    mocks.countAdmins.mockResolvedValue(1);
+  it("permite el registro público de nuevos jefes en cualquier momento (REQ-015)", async () => {
     const res = await POST(
       jsonRequest({
         name: "Ana",
@@ -93,8 +88,10 @@ describe("POST /api/auth/register (REQ-009, REQ-010)", () => {
         password: "secreto123",
       })
     );
-    expect(res.status).toBe(403);
-    expect(mocks.createUser).not.toHaveBeenCalled();
+    expect(res.status).toBe(201);
+    expect(mocks.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "ana@example.com", role: "ADMIN" })
+    );
   });
 
   it("rechaza datos inválidos (REQ-NF-002)", async () => {

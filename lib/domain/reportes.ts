@@ -29,6 +29,22 @@ export function finDeSemana(fecha: Date): Date {
   return fin;
 }
 
+export function formatearFechaLocal(fecha: Date): string {
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
+
+export function sumarSemanas(fechaISO: string, semanas: number): string {
+  const fecha = new Date(`${fechaISO}T00:00:00`);
+  if (Number.isNaN(fecha.getTime())) {
+    return fechaISO;
+  }
+  fecha.setDate(fecha.getDate() + semanas * 7);
+  return formatearFechaLocal(fecha);
+}
+
 function interseccion(
   periodo: PeriodoReporte,
   inicioSemana: Date,

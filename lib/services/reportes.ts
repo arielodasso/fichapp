@@ -1,5 +1,6 @@
 import {
   finDeSemana,
+  formatearFechaLocal,
   generarReporteSemanal,
   inicioDeSemana,
 } from "@/lib/domain/reportes";
@@ -79,8 +80,8 @@ export async function getReporteSemanal(
     .sort((a, b) => a.obraNombre.localeCompare(b.obraNombre));
 
   return {
-    inicioSemana: inicio.toISOString(),
-    finSemana: fin.toISOString(),
+    inicioSemana: formatearFechaLocal(inicio),
+    finSemana: formatearFechaLocal(fin),
     porObra,
   };
 }

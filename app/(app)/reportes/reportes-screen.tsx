@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { formatHoras } from "@/lib/format";
+import { sumarSemanas } from "@/lib/domain/reportes";
 import type { ReporteSemanalDTO } from "@/lib/services/reportes";
 import {
   Badge,
@@ -19,21 +20,17 @@ import {
   UsersIcon,
 } from "@/components/icons";
 
-function fechaLocalISO(d: Date): string {
-  const anio = d.getFullYear();
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const dia = String(d.getDate()).padStart(2, "0");
-  return `${anio}-${mes}-${dia}`;
+function parseFechaLocal(fechaISO: string): Date {
+  return new Date(`${fechaISO}T00:00:00`);
 }
 
 export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
-  const inicio = new Date(reporte.inicioSemana);
-  const fin = new Date(reporte.finSemana);
-  const ultimoDia = new Date(fin.getTime() - 1);
-  const prev = new Date(inicio);
-  prev.setDate(prev.getDate() - 7);
-  const next = new Date(inicio);
-  next.setDate(next.getDate() + 7);
+  const inicio = parseFechaLocal(reporte.inicioSemana);
+  const fin = parseFechaLocal(reporte.finSemana);
+  const ultimoDia = new Date(fin);
+  ultimoDia.setDate(ultimoDia.getDate() - 1);
+  const semanaAnterior = sumarSemanas(reporte.inicioSemana, -1);
+  const semanaSiguiente = sumarSemanas(reporte.inicioSemana, 1);
 
   const totalGeneral = reporte.porObra.reduce(
     (acc, obra) => acc + obra.empleados.reduce((s, e) => s + e.horas, 0),
@@ -75,7 +72,7 @@ export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
         actions={
           <div className="flex items-center gap-2">
             <Link
-              href={`/reportes?fecha=${fechaLocalISO(prev)}`}
+              href={`/reportes?fecha=${semanaAnterior}`}
               className={btnSecondary}
               aria-label="Semana anterior"
             >
@@ -83,7 +80,7 @@ export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
               <span className="hidden sm:inline">Anterior</span>
             </Link>
             <Link
-              href={`/reportes?fecha=${fechaLocalISO(next)}`}
+              href={`/reportes?fecha=${semanaSiguiente}`}
               className={btnSecondary}
               aria-label="Semana siguiente"
             >

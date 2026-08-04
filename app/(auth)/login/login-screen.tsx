@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, cx, inputClass } from "@/components/ui";
@@ -31,11 +30,7 @@ const FEATURES = [
   },
 ];
 
-interface LoginScreenProps {
-  registroAbierto: boolean;
-}
-
-export function LoginScreen({ registroAbierto }: LoginScreenProps) {
+export function LoginScreen() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
@@ -179,24 +174,7 @@ export function LoginScreen({ registroAbierto }: LoginScreenProps) {
             ))}
           </div>
 
-          {mode === "register" && !registroAbierto ? (
-            <div className="mt-6 flex flex-col gap-4">
-              <Alert>
-                <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                <div>
-                  El registro público está cerrado. Si sos empleado, usá el
-                  enlace de invitación que te envió el jefe.
-                </div>
-              </Alert>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-primary-strong"
-              >
-                Ir a Ingresar
-              </Link>
-            </div>
-          ) : (
-            <form
+          <form
               onSubmit={handleSubmit}
               className="mt-6 flex flex-col gap-4"
               noValidate
@@ -258,7 +236,6 @@ export function LoginScreen({ registroAbierto }: LoginScreenProps) {
                     : "Crear cuenta"}
               </button>
             </form>
-          )}
         </div>
       </section>
     </main>
