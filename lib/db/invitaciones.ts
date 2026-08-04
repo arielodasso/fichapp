@@ -121,7 +121,7 @@ export async function findInvitacionVigentePorCodigo(
   return invitacion.empleadoActivo === false ? null : invitacion;
 }
 
-export async function listInvitaciones(): Promise<Invitacion[]> {
+export async function listInvitaciones(jefeId: string): Promise<Invitacion[]> {
   const { rows } = await pool.query<InvitacionRow>(
     `SELECT i.*,
             e.nombre   AS empleado_nombre,
@@ -130,15 +130,22 @@ export async function listInvitaciones(): Promise<Invitacion[]> {
             e.activo   AS empleado_activo
      FROM invitaciones i
      JOIN empleados e ON e.id = i.empleado_id
-     ORDER BY i.created_at DESC`
+     WHERE e.jefe_id = $1
+     ORDER BY i.created_at DESC`,
+    [jefeId]
   );
   return rows.map(mapInvitacion);
 }
 
-export async function deleteInvitacion(id: string): Promise<boolean> {
+export async function deleteInvitacion(
+  id: string,
+  jefeId?: string
+): Promise<boolean> {
   const { rowCount } = await pool.query(
-    `DELETE FROM invitaciones WHERE id = $1`,
-    [id]
+    `DELETE FROM invitaciones
+     WHERE id = $1
+       AND ($2::uuid IS NULL OR empleado_id IN (SELECT id FROM empleados WHERE jefe_id = $2))`,
+    [id, jefeId ?? null]
   );
   return (rowCount ?? 0) > 0;
 }

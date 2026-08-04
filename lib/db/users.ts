@@ -67,9 +67,12 @@ export async function findUserById(id: string): Promise<User | null> {
   return rows[0] ? mapUser(rows[0]) : null;
 }
 
-export async function listUsers(): Promise<User[]> {
+export async function listUsers(jefeId: string): Promise<User[]> {
   const { rows } = await pool.query<UserRow>(
-    `SELECT * FROM users ORDER BY name ASC`
+    `SELECT * FROM users
+     WHERE id IN (SELECT user_id FROM empleados WHERE jefe_id = $1 AND user_id IS NOT NULL)
+     ORDER BY name ASC`,
+    [jefeId]
   );
   return rows.map(mapUser);
 }

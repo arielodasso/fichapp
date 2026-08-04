@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/services/current-user";
+import { resolveTenantId } from "@/lib/services/tenant";
 import { isValidUUID } from "@/lib/utils";
 import {
   deleteNovedad,
@@ -15,7 +16,12 @@ export async function DELETE(
     return Response.json({ error: "Id inválido" }, { status: 400 });
   }
 
-  const novedad = await findNovedadById(novedadId);
+  const jefeId = await resolveTenantId(user);
+  if (!jefeId) {
+    return Response.json({ error: "Novedad no encontrada" }, { status: 404 });
+  }
+
+  const novedad = await findNovedadById(novedadId, jefeId);
   if (!novedad) {
     return Response.json({ error: "Novedad no encontrada" }, { status: 404 });
   }

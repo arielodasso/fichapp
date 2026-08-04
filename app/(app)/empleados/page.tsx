@@ -8,15 +8,15 @@ import { calcularHoras } from "@/lib/domain/horarios";
 import { EmpleadosScreen } from "./empleados-screen";
 
 export default async function EmpleadosPage() {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const [empleados, usuarios, invitaciones, obras, periodos] =
     await Promise.all([
-      listEmpleados(),
-      listUsers(),
-      listInvitaciones(),
-      listObras(),
-      listAllPeriodos(),
+      listEmpleados(user.id),
+      listUsers(user.id),
+      listInvitaciones(user.id),
+      listObras(user.id),
+      listAllPeriodos(user.id),
     ]);
 
   const horasTotales = new Map<string, number>();

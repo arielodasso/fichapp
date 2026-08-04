@@ -29,7 +29,7 @@ export async function GET() {
   const empleado = await findEmpleadoByUserId(user.id);
   const [obras, obrasRef] = await Promise.all([
     empleado ? listObrasDeEmpleado(empleado.id) : Promise.resolve([]),
-    listObras(),
+    empleado ? listObras(empleado.jefeId) : Promise.resolve([]),
   ]);
 
   const periodos = empleado
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const obra = await findObraById(obraId);
+    const obra = await findObraById(obraId, empleado.jefeId);
     if (!obra || !obra.activo) {
       return Response.json({ error: "La obra no existe o está inactiva" }, { status: 400 });
     }

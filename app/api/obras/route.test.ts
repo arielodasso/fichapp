@@ -47,7 +47,21 @@ describe("GET /api/obras (REQ-002)", () => {
   it("transmite el filtro de activas", async () => {
     mocks.listObras.mockResolvedValue([]);
     await GET(new Request("http://localhost/api/obras?activas=true"));
-    expect(mocks.listObras).toHaveBeenCalledWith({ soloActivas: true });
+    expect(mocks.listObras).toHaveBeenCalledWith("u-1", { soloActivas: true });
+  });
+
+  it("filtra las obras por el jefe de la sesión (multi-tenancy)", async () => {
+    mocks.listObras.mockResolvedValue([]);
+    mocks.requireAdmin.mockResolvedValue({
+      id: "j-2",
+      email: "otro@example.com",
+      name: "Otro Jefe",
+      role: "ADMIN",
+    });
+    await GET(new Request("http://localhost/api/obras"));
+    expect(mocks.listObras).toHaveBeenCalledWith("j-2", {
+      soloActivas: undefined,
+    });
   });
 });
 
@@ -56,7 +70,7 @@ describe("POST /api/obras (REQ-002)", () => {
     mocks.createObra.mockResolvedValue({ id: "o-1" });
     const res = await POST(jsonRequest({ nombre: "Edificio Norte" }));
     expect(res.status).toBe(201);
-    expect(mocks.createObra).toHaveBeenCalledWith({
+    expect(mocks.createObra).toHaveBeenCalledWith("u-1", {
       nombre: "Edificio Norte",
       descripcion: null,
       estado: "ACTIVA",
@@ -69,6 +83,7 @@ describe("POST /api/obras (REQ-002)", () => {
       jsonRequest({ nombre: "Obra", estado: "PAUSADA" })
     );
     expect(mocks.createObra).toHaveBeenCalledWith(
+      "u-1",
       expect.objectContaining({ estado: "PAUSADA" })
     );
   });

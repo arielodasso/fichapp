@@ -16,9 +16,9 @@ interface InvitacionBody {
 }
 
 export async function GET(request: Request) {
-  await requireAdmin();
+  const user = await requireAdmin();
 
-  const invitaciones = await listInvitaciones();
+  const invitaciones = await listInvitaciones(user.id);
   return Response.json({
     invitaciones: invitaciones.map((i) => ({
       id: i.id,
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const empleado = await findEmpleadoById(empleadoId);
+  const empleado = await findEmpleadoById(empleadoId, user.id);
   if (!empleado) {
     return Response.json({ error: "Empleado no encontrado" }, { status: 404 });
   }

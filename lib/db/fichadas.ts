@@ -93,29 +93,33 @@ export async function cerrarPeriodo(
 
 export async function marcarCorregido(
   id: string,
-  userId: string
+  userId: string,
+  jefeId?: string
 ): Promise<Periodo | null> {
   const { rows } = await pool.query<PeriodoRow>(
     `UPDATE periodos
      SET corregido = true, corregido_por = $2, corregido_en = now()
      WHERE id = $1
+       AND ($3::uuid IS NULL OR empleado_id IN (SELECT id FROM empleados WHERE jefe_id = $3))
      RETURNING *`,
-    [id, userId]
+    [id, userId, jefeId ?? null]
   );
   return rows[0] ? mapPeriodo(rows[0]) : null;
 }
 
 export async function listPeriodosEntre(
   fechaDesde: Date,
-  fechaHasta: Date
+  fechaHasta: Date,
+  jefeId: string
 ): Promise<Periodo[]> {
   const { rows } = await pool.query<PeriodoRow>(
     `SELECT * FROM periodos
      WHERE ingreso_at < $2
        AND (egreso_at IS NULL OR egreso_at >= $1)
        AND eliminado = false
+       AND empleado_id IN (SELECT id FROM empleados WHERE jefe_id = $3)
      ORDER BY ingreso_at ASC`,
-    [fechaDesde, fechaHasta]
+    [fechaDesde, fechaHasta, jefeId]
   );
   return rows.map(mapPeriodo);
 }
@@ -132,25 +136,29 @@ export async function listPeriodosDeEmpleado(
   return rows.map(mapPeriodo);
 }
 
-export async function listAllPeriodos(): Promise<Periodo[]> {
+export async function listAllPeriodos(jefeId: string): Promise<Periodo[]> {
   const { rows } = await pool.query<PeriodoRow>(
     `SELECT * FROM periodos
      WHERE eliminado = false
-     ORDER BY ingreso_at DESC`
+       AND empleado_id IN (SELECT id FROM empleados WHERE jefe_id = $1)
+     ORDER BY ingreso_at DESC`,
+    [jefeId]
   );
   return rows.map(mapPeriodo);
 }
 
 export async function actualizarPeriodo(
   id: string,
-  input: { ingresoAt: Date; egresoAt: Date | null }
+  input: { ingresoAt: Date; egresoAt: Date | null },
+  jefeId?: string
 ): Promise<Periodo | null> {
   try {
     const { rows } = await pool.query<PeriodoRow>(
       `UPDATE periodos SET ingreso_at = $2, egreso_at = $3
        WHERE id = $1
+         AND ($4::uuid IS NULL OR empleado_id IN (SELECT id FROM empleados WHERE jefe_id = $4))
        RETURNING *`,
-      [id, input.ingresoAt, input.egresoAt]
+      [id, input.ingresoAt, input.egresoAt, jefeId ?? null]
     );
     return rows[0] ? mapPeriodo(rows[0]) : null;
   } catch (err) {
@@ -163,7 +171,8 @@ export async function actualizarPeriodo(
 
 export async function eliminarPeriodo(
   id: string,
-  userId: string
+  userId: string,
+  jefeId?: string
 ): Promise<Periodo | null> {
   const { rows } = await pool.query<PeriodoRow>(
     `UPDATE periodos
@@ -173,8 +182,9 @@ export async function eliminarPeriodo(
          corregido_en = now(),
          egreso_at = COALESCE(egreso_at, ingreso_at)
      WHERE id = $1
+       AND ($3::uuid IS NULL OR empleado_id IN (SELECT id FROM empleados WHERE jefe_id = $3))
      RETURNING *`,
-    [id, userId]
+    [id, userId, jefeId ?? null]
   );
   return rows[0] ? mapPeriodo(rows[0]) : null;
 }

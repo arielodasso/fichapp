@@ -2,6 +2,7 @@ import { pool } from "./client";
 
 export interface Empleado {
   id: string;
+  jefeId: string;
   nombre: string;
   apellido: string;
   documento: string;
@@ -34,6 +35,7 @@ export interface UpdateEmpleadoInput {
 
 interface EmpleadoRow {
   id: string;
+  jefe_id: string;
   nombre: string;
   apellido: string;
   documento: string;
@@ -47,6 +49,7 @@ interface EmpleadoRow {
 function mapEmpleado(row: EmpleadoRow, obraIds: string[] = []): Empleado {
   return {
     id: row.id,
+    jefeId: row.jefe_id,
     nombre: row.nombre,
     apellido: row.apellido,
     documento: row.documento,
@@ -79,7 +82,8 @@ async function fetchObraIds(empleadoIds: string[]): Promise<Map<string, string[]
 
 export async function asignarObrasEmpleado(
   empleadoId: string,
-  obraIds: string[]
+  obraIds: string[],
+  jefeId?: string
 ): Promise<void> {
   const client = await pool.connect();
   try {
@@ -89,8 +93,10 @@ export async function asignarObrasEmpleado(
     ]);
     for (const obraId of obraIds) {
       await client.query(
-        `INSERT INTO empleado_obras (empleado_id, obra_id) VALUES ($1, $2)`,
-        [empleadoId, obraId]
+        `INSERT INTO empleado_obras (empleado_id, obra_id)
+         SELECT $1, $2
+         WHERE EXISTS (SELECT 1 FROM obras o WHERE o.id = $2 AND ($3::uuid IS NULL OR o.jefe_id = $3))`,
+        [empleadoId, obraId, jefeId ?? null]
       );
     }
     await client.query("COMMIT");
@@ -103,40 +109,55 @@ export async function asignarObrasEmpleado(
 }
 
 export async function createEmpleado(
+  jefeId: string,
   input: CreateEmpleadoInput
 ): Promise<Empleado> {
   const { rows } = await pool.query<EmpleadoRow>(
-    `INSERT INTO empleados (nombre, apellido, documento, rol, user_id)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO empleados (jefe_id, nombre, apellido, documento, rol, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [input.nombre, input.apellido, input.documento, input.rol ?? "OBRERO", input.userId ?? null]
+    [
+      jefeId,
+      input.nombre,
+      input.apellido,
+      input.documento,
+      input.rol ?? "OBRERO",
+      input.userId ?? null,
+    ]
   );
   const empleado = mapEmpleado(rows[0]);
   const obraIds = input.obraIds ?? [];
   if (obraIds.length > 0) {
-    await asignarObrasEmpleado(empleado.id, obraIds);
+    await asignarObrasEmpleado(empleado.id, obraIds, jefeId);
     empleado.obraIds = obraIds;
   }
   return empleado;
 }
 
-export async function listEmpleados(options?: {
-  soloActivos?: boolean;
-}): Promise<Empleado[]> {
+export async function listEmpleados(
+  jefeId: string,
+  options?: {
+    soloActivos?: boolean;
+  }
+): Promise<Empleado[]> {
   const { rows } = await pool.query<EmpleadoRow>(
     `SELECT * FROM empleados
-     WHERE ($1::boolean IS NULL OR activo = $1)
+     WHERE jefe_id = $1
+       AND ($2::boolean IS NULL OR activo = $2)
      ORDER BY apellido ASC, nombre ASC`,
-    [options?.soloActivos ?? null]
+    [jefeId, options?.soloActivos ?? null]
   );
   const obraIds = await fetchObraIds(rows.map((r) => r.id));
   return rows.map((r) => mapEmpleado(r, obraIds.get(r.id) ?? []));
 }
 
-export async function findEmpleadoById(id: string): Promise<Empleado | null> {
+export async function findEmpleadoById(
+  id: string,
+  jefeId?: string
+): Promise<Empleado | null> {
   const { rows } = await pool.query<EmpleadoRow>(
-    `SELECT * FROM empleados WHERE id = $1`,
-    [id]
+    `SELECT * FROM empleados WHERE id = $1 AND ($2::uuid IS NULL OR jefe_id = $2)`,
+    [id, jefeId ?? null]
   );
   if (!rows[0]) return null;
   const obraIds = await fetchObraIds([id]);
@@ -157,7 +178,8 @@ export async function findEmpleadoByUserId(
 
 export async function updateEmpleado(
   id: string,
-  input: UpdateEmpleadoInput
+  input: UpdateEmpleadoInput,
+  jefeId?: string
 ): Promise<Empleado | null> {
   const sets: string[] = [];
   const values: unknown[] = [];
@@ -190,25 +212,35 @@ export async function updateEmpleado(
 
   let empleado: Empleado | null = null;
   if (sets.length === 0) {
-    empleado = await findEmpleadoById(id);
+    empleado = await findEmpleadoById(id, jefeId);
   } else {
     sets.push(`updated_at = now()`);
     values.push(id);
+
+    let whereClause = `id = $${i++}`;
+    if (jefeId) {
+      whereClause += ` AND jefe_id = $${i++}`;
+      values.push(jefeId);
+    }
+
     const { rows } = await pool.query<EmpleadoRow>(
-      `UPDATE empleados SET ${sets.join(", ")} WHERE id = $${i} RETURNING *`,
+      `UPDATE empleados SET ${sets.join(", ")} WHERE ${whereClause} RETURNING *`,
       values
     );
     empleado = rows[0] ? mapEmpleado(rows[0]) : null;
   }
 
   if (empleado && input.obraIds !== undefined) {
-    await asignarObrasEmpleado(id, input.obraIds);
+    await asignarObrasEmpleado(id, input.obraIds, jefeId);
     empleado.obraIds = input.obraIds;
   }
 
   return empleado;
 }
 
-export async function deactivateEmpleado(id: string): Promise<Empleado | null> {
-  return updateEmpleado(id, { activo: false });
+export async function deactivateEmpleado(
+  id: string,
+  jefeId?: string
+): Promise<Empleado | null> {
+  return updateEmpleado(id, { activo: false }, jefeId);
 }

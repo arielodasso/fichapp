@@ -20,7 +20,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireAdmin();
+  const user = await requireAdmin();
   const { id } = await params;
   if (!isValidUUID(id)) {
     return Response.json({ error: "Id de empleado inválido" }, { status: 400 });
@@ -66,7 +66,7 @@ export async function PATCH(
     input.obraIds = obraIds;
   }
 
-  const empleado = await updateEmpleado(id, input);
+  const empleado = await updateEmpleado(id, input, user.id);
   if (!empleado) {
     return Response.json({ error: "Empleado no encontrado" }, { status: 404 });
   }
@@ -78,13 +78,13 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireAdmin();
+  const user = await requireAdmin();
   const { id } = await params;
   if (!isValidUUID(id)) {
     return Response.json({ error: "Id de empleado inválido" }, { status: 400 });
   }
 
-  const empleado = await deactivateEmpleado(id);
+  const empleado = await deactivateEmpleado(id, user.id);
   if (!empleado) {
     return Response.json({ error: "Empleado no encontrado" }, { status: 404 });
   }

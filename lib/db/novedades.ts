@@ -70,7 +70,8 @@ export async function createNovedad(
 }
 
 export async function findNovedadById(
-  id: string
+  id: string,
+  jefeId?: string
 ): Promise<Novedad | null> {
   const { rows } = await pool.query<NovedadRow>(
     `SELECT n.id,
@@ -81,8 +82,11 @@ export async function findNovedadById(
             n.created_at
      FROM novedades_obra n
      JOIN users u ON u.id = n.autor_id
-     WHERE n.id = $1`,
-    [id]
+     WHERE n.id = $1
+       AND ($2::uuid IS NULL OR EXISTS (
+             SELECT 1 FROM obras o WHERE o.id = n.obra_id AND o.jefe_id = $2
+           ))`,
+    [id, jefeId ?? null]
   );
   return rows[0] ? mapNovedad(rows[0]) : null;
 }

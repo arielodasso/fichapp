@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS empleados (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  jefe_id    UUID NOT NULL REFERENCES users(id),
   nombre     TEXT NOT NULL,
   apellido   TEXT NOT NULL,
   documento  TEXT NOT NULL UNIQUE,
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS empleados (
 
 CREATE TABLE IF NOT EXISTS obras (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  jefe_id     UUID NOT NULL REFERENCES users(id),
   nombre      TEXT NOT NULL,
   descripcion TEXT,
   estado      TEXT NOT NULL DEFAULT 'ACTIVA'
@@ -101,3 +103,34 @@ CREATE TABLE IF NOT EXISTS novedades_obra (
 );
 
 CREATE INDEX IF NOT EXISTS idx_novedades_obra ON novedades_obra (obra_id, created_at DESC);
+
+-- === Multi-tenancy: aislamiento de datos por jefe ===
+-- Cada obra y cada empleado pertenece a un único jefe (cuenta ADMIN).
+-- En bases existentes, la columna se agrega nullable, se reasigna al jefe
+-- (ADMIN) más antiguo como dueño de los datos históricos y luego se vuelve
+-- NOT NULL. Todas las operaciones son idempotentes y seguras de re-ejecutar.
+ALTER TABLE obras ADD COLUMN IF NOT EXISTS jefe_id UUID REFERENCES users(id);
+ALTER TABLE empleados ADD COLUMN IF NOT EXISTS jefe_id UUID REFERENCES users(id);
+
+UPDATE obras o
+   SET jefe_id = (SELECT id FROM users WHERE role = 'ADMIN' ORDER BY created_at ASC, id ASC LIMIT 1)
+ WHERE o.jefe_id IS NULL;
+
+UPDATE empleados e
+   SET jefe_id = (SELECT id FROM users WHERE role = 'ADMIN' ORDER BY created_at ASC, id ASC LIMIT 1)
+ WHERE e.jefe_id IS NULL;
+
+ALTER TABLE obras ALTER COLUMN jefe_id SET NOT NULL;
+ALTER TABLE empleados ALTER COLUMN jefe_id SET NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_obras_jefe     ON obras (jefe_id);
+CREATE INDEX IF NOT EXISTS idx_empleados_jefe ON empleados (jefe_id);
+
+-- El documento es único dentro de cada jefe (no global entre tenants).
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'empleados_jefe_documento_unique') THEN
+    ALTER TABLE empleados DROP CONSTRAINT IF EXISTS empleados_documento_key;
+    ALTER TABLE empleados ADD CONSTRAINT empleados_jefe_documento_unique UNIQUE (jefe_id, documento);
+  END IF;
+END $$;

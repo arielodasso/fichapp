@@ -72,11 +72,15 @@ describe("PATCH /api/periodos/[id] (REQ-012)", () => {
       params
     );
     expect(res.status).toBe(200);
-    expect(mocks.actualizarPeriodo).toHaveBeenCalledWith(periodoId, {
-      ingresoAt: expect.any(Date),
-      egresoAt: expect.any(Date),
-    });
-    expect(mocks.marcarCorregido).toHaveBeenCalledWith(periodoId, "u-1");
+    expect(mocks.actualizarPeriodo).toHaveBeenCalledWith(
+      periodoId,
+      {
+        ingresoAt: expect.any(Date),
+        egresoAt: expect.any(Date),
+      },
+      "u-1"
+    );
+    expect(mocks.marcarCorregido).toHaveBeenCalledWith(periodoId, "u-1", "u-1");
   });
 
   it("rechaza un egreso anterior al ingreso (REQ-NF-002)", async () => {
@@ -123,7 +127,7 @@ describe("DELETE /api/periodos/[id] (REQ-012)", () => {
       params
     );
     expect(res.status).toBe(200);
-    expect(mocks.eliminarPeriodo).toHaveBeenCalledWith(periodoId, "u-1");
+    expect(mocks.eliminarPeriodo).toHaveBeenCalledWith(periodoId, "u-1", "u-1");
   });
 
   it("devuelve 404 si el período no existe", async () => {

@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/services/current-user";
+import { resolveTenantId } from "@/lib/services/tenant";
 import { isValidUUID } from "@/lib/utils";
 import { findObraById } from "@/lib/db/obras";
 import {
@@ -16,13 +17,18 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireUser();
+  const user = await requireUser();
   const { id } = await params;
   if (!isValidUUID(id)) {
     return Response.json({ error: "Id de obra inválido" }, { status: 400 });
   }
 
-  const obra = await findObraById(id);
+  const jefeId = await resolveTenantId(user);
+  if (!jefeId) {
+    return Response.json({ error: "Obra no encontrada" }, { status: 404 });
+  }
+
+  const obra = await findObraById(id, jefeId);
   if (!obra) {
     return Response.json({ error: "Obra no encontrada" }, { status: 404 });
   }
@@ -50,7 +56,12 @@ export async function POST(
     return Response.json({ error: "Id de obra inválido" }, { status: 400 });
   }
 
-  const obra = await findObraById(id);
+  const jefeId = await resolveTenantId(user);
+  if (!jefeId) {
+    return Response.json({ error: "Obra no encontrada" }, { status: 404 });
+  }
+
+  const obra = await findObraById(id, jefeId);
   if (!obra) {
     return Response.json({ error: "Obra no encontrada" }, { status: 404 });
   }

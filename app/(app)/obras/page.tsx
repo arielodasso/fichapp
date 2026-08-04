@@ -1,12 +1,20 @@
 import { requireUser } from "@/lib/services/current-user";
-import { listObras } from "@/lib/db/obras";
+import { findEmpleadoByUserId } from "@/lib/db/empleados";
+import { listObras, listObrasDeEmpleado } from "@/lib/db/obras";
 import { ObrasScreen } from "./obras-screen";
 
 export default async function ObrasPage() {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
 
-  const obras = await listObras({ soloActivas: !isAdmin });
+  const obras = isAdmin
+    ? await listObras(user.id, { soloActivas: false })
+    : await (async () => {
+        const empleado = await findEmpleadoByUserId(user.id);
+        return empleado
+          ? listObrasDeEmpleado(empleado.id, empleado.jefeId)
+          : [];
+      })();
 
   return (
     <ObrasScreen

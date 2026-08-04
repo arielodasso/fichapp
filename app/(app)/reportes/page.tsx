@@ -7,13 +7,14 @@ interface Props {
 }
 
 export default async function ReportesPage({ searchParams }: Props) {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const sp = await searchParams;
   const fechaParam = sp.fecha;
   const base = fechaParam ? new Date(`${fechaParam}T00:00:00`) : new Date();
   const reporte = await getReporteSemanal(
-    Number.isNaN(base.getTime()) ? new Date() : base
+    Number.isNaN(base.getTime()) ? new Date() : base,
+    user.id
   );
 
   return <ReportesScreen reporte={reporte} />;

@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
 
-  const reporte = isAdmin ? await getReporteSemanal(new Date()) : null;
+  const reporte = isAdmin ? await getReporteSemanal(new Date(), user.id) : null;
 
   const totalHoras =
     reporte?.porObra.reduce(

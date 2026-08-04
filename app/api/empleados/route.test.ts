@@ -51,7 +51,23 @@ describe("GET /api/empleados (REQ-001)", () => {
   it("transmite el filtro de activos", async () => {
     mocks.listEmpleados.mockResolvedValue([]);
     await GET(new Request("http://localhost/api/empleados?activos=true"));
-    expect(mocks.listEmpleados).toHaveBeenCalledWith({ soloActivos: true });
+    expect(mocks.listEmpleados).toHaveBeenCalledWith("u-1", {
+      soloActivos: true,
+    });
+  });
+
+  it("filtra los empleados por el jefe de la sesión (multi-tenancy)", async () => {
+    mocks.listEmpleados.mockResolvedValue([]);
+    mocks.requireAdmin.mockResolvedValue({
+      id: "j-2",
+      email: "otro@example.com",
+      name: "Otro Jefe",
+      role: "ADMIN",
+    });
+    await GET(new Request("http://localhost/api/empleados"));
+    expect(mocks.listEmpleados).toHaveBeenCalledWith("j-2", {
+      soloActivos: undefined,
+    });
   });
 });
 
@@ -76,7 +92,7 @@ describe("POST /api/empleados (REQ-001, REQ-015)", () => {
       })
     );
     expect(res.status).toBe(201);
-    expect(mocks.createEmpleado).toHaveBeenCalledWith({
+    expect(mocks.createEmpleado).toHaveBeenCalledWith("u-1", {
       nombre: "Juan",
       apellido: "Pérez",
       documento: "30111222",

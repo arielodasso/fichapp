@@ -6,12 +6,12 @@ import { calcularHoras } from "@/lib/domain/horarios";
 import { PeriodosScreen } from "./periodos-screen";
 
 export default async function PeriodosPage() {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const [periodos, empleados, obras] = await Promise.all([
-    listAllPeriodos(),
-    listEmpleados(),
-    listObras(),
+    listAllPeriodos(user.id),
+    listEmpleados(user.id),
+    listObras(user.id),
   ]);
 
   const empleadoNombre = new Map(

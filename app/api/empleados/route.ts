@@ -13,14 +13,14 @@ interface EmpleadoBody {
 }
 
 export async function GET(request: Request) {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const url = new URL(request.url);
   const activos = url.searchParams.get("activos");
   const soloActivos =
     activos === "true" ? true : activos === "false" ? false : undefined;
 
-  const empleados = await listEmpleados({ soloActivos });
+  const empleados = await listEmpleados(user.id, { soloActivos });
   return Response.json({ empleados });
 }
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const empleado = await createEmpleado({
+  const empleado = await createEmpleado(user.id, {
     nombre,
     apellido,
     documento,

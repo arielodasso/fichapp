@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireUser: vi.fn(),
+  findEmpleadoByUserId: vi.fn(),
   findObraById: vi.fn(),
   listNovedadesDeObra: vi.fn(),
   createNovedad: vi.fn(),
@@ -11,6 +12,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/services/current-user", () => ({
   requireUser: mocks.requireUser,
+}));
+vi.mock("@/lib/db/empleados", () => ({
+  findEmpleadoByUserId: mocks.findEmpleadoByUserId,
 }));
 vi.mock("@/lib/db/obras", () => ({
   findObraById: mocks.findObraById,
@@ -43,6 +47,10 @@ const empleado = {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.requireUser.mockResolvedValue(empleado);
+  mocks.findEmpleadoByUserId.mockResolvedValue({
+    id: "e-1",
+    jefeId: "j-1",
+  } as never);
   mocks.findObraById.mockResolvedValue(obra);
   mocks.createNovedad.mockImplementation((input: Record<string, unknown>) =>
     Promise.resolve({ ...input, id: "n-1", autorNombre: "Juan" })

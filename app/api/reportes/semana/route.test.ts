@@ -70,6 +70,9 @@ describe("GET /api/reportes/semana: parámetro fecha (REQ-NF-002)", () => {
       new Request("http://localhost/api/reportes/semana?fecha=2026-08-05")
     );
     expect(res.status).toBe(200);
-    expect(mocks.getReporteSemanal).toHaveBeenCalledWith(expect.any(Date));
+    expect(mocks.getReporteSemanal).toHaveBeenCalledWith(
+      expect.any(Date),
+      "u-1"
+    );
   });
 });

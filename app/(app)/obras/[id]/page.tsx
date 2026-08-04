@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/services/current-user";
 import { isValidUUID } from "@/lib/utils";
+import { findEmpleadoByUserId } from "@/lib/db/empleados";
 import { findObraById } from "@/lib/db/obras";
 import { listNovedadesDeObra } from "@/lib/db/novedades";
 import { ObraScreen } from "./obra-screen";
@@ -18,8 +19,17 @@ export default async function ObraPage({ params }: Props) {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
 
-  const obra = await findObraById(id);
+  const empleado = isAdmin ? null : await findEmpleadoByUserId(user.id);
+  const jefeId = isAdmin ? user.id : (empleado?.jefeId ?? null);
+  if (!jefeId) {
+    notFound();
+  }
+
+  const obra = await findObraById(id, jefeId);
   if (!obra || (!isAdmin && !obra.activo)) {
+    notFound();
+  }
+  if (!isAdmin && !(empleado?.obraIds.includes(id) ?? false)) {
     notFound();
   }
 

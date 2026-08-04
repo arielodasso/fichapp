@@ -4,12 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireUser: vi.fn(),
+  findEmpleadoByUserId: vi.fn(),
   findNovedadById: vi.fn(),
   deleteNovedad: vi.fn(),
 }));
 
 vi.mock("@/lib/services/current-user", () => ({
   requireUser: mocks.requireUser,
+}));
+vi.mock("@/lib/db/empleados", () => ({
+  findEmpleadoByUserId: mocks.findEmpleadoByUserId,
 }));
 vi.mock("@/lib/db/novedades", () => ({
   findNovedadById: mocks.findNovedadById,
@@ -40,6 +44,10 @@ const admin = { id: "u-9", email: "j@b.c", name: "J", role: "ADMIN" };
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.requireUser.mockResolvedValue(empleado);
+  mocks.findEmpleadoByUserId.mockResolvedValue({
+    id: "e-1",
+    jefeId: "j-1",
+  } as never);
   mocks.findNovedadById.mockResolvedValue(novedad);
   mocks.deleteNovedad.mockResolvedValue(true);
 });

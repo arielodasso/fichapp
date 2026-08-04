@@ -29,15 +29,16 @@ export interface ReporteSemanalDTO {
 }
 
 export async function getReporteSemanal(
-  fechaBase: Date
+  fechaBase: Date,
+  jefeId: string
 ): Promise<ReporteSemanalDTO> {
   const inicio = inicioDeSemana(fechaBase);
   const fin = finDeSemana(inicio);
 
   const [periodos, obras, empleados] = await Promise.all([
-    listPeriodosEntre(inicio, fin),
-    listObras(),
-    listEmpleados(),
+    listPeriodosEntre(inicio, fin, jefeId),
+    listObras(jefeId),
+    listEmpleados(jefeId),
   ]);
 
   const reporte = generarReporteSemanal(

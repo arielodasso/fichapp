@@ -47,7 +47,13 @@ const user = {
   role: "EMPLOYEE",
 };
 
-const empleado = { id: "e-1", nombre: "Juan", apellido: "Pérez", obraIds: [] };
+const empleado = {
+  id: "e-1",
+  jefeId: "u-1",
+  nombre: "Juan",
+  apellido: "Pérez",
+  obraIds: [],
+};
 
 const obra = {
   id: "11111111-1111-4111-8111-111111111111",

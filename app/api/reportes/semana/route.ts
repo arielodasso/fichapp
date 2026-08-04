@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/services/current-user";
 import { getReporteSemanal } from "@/lib/services/reportes";
 
 export async function GET(request: Request) {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const url = new URL(request.url);
   const fechaParam = url.searchParams.get("fecha");
@@ -14,6 +14,6 @@ export async function GET(request: Request) {
     );
   }
 
-  const reporte = await getReporteSemanal(base);
+  const reporte = await getReporteSemanal(base, user.id);
   return Response.json(reporte);
 }

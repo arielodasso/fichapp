@@ -64,7 +64,7 @@ export async function PATCH(
 
   let periodo;
   try {
-    periodo = await actualizarPeriodo(id, { ingresoAt, egresoAt });
+    periodo = await actualizarPeriodo(id, { ingresoAt, egresoAt }, user.id);
   } catch (err) {
     if (err instanceof PeriodoAbiertoError) {
       return Response.json(
@@ -78,7 +78,7 @@ export async function PATCH(
     return Response.json({ error: "Período no encontrado" }, { status: 404 });
   }
 
-  const corregido = await marcarCorregido(id, user.id);
+  const corregido = await marcarCorregido(id, user.id, user.id);
   return Response.json({ periodo: corregido ?? periodo });
 }
 
@@ -92,7 +92,7 @@ export async function DELETE(
     return Response.json({ error: "Id de período inválido" }, { status: 400 });
   }
 
-  const periodo = await eliminarPeriodo(id, user.id);
+  const periodo = await eliminarPeriodo(id, user.id, user.id);
   if (!periodo) {
     return Response.json({ error: "Período no encontrado" }, { status: 404 });
   }

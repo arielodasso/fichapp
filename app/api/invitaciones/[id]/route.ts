@@ -6,13 +6,13 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireAdmin();
+  const user = await requireAdmin();
   const { id } = await params;
   if (!isValidUUID(id)) {
     return Response.json({ error: "Id de invitación inválido" }, { status: 400 });
   }
 
-  const eliminada = await deleteInvitacion(id);
+  const eliminada = await deleteInvitacion(id, user.id);
   if (!eliminada) {
     return Response.json({ error: "Invitación no encontrada" }, { status: 404 });
   }

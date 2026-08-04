@@ -10,19 +10,19 @@ interface ObraBody {
 }
 
 export async function GET(request: Request) {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const url = new URL(request.url);
   const activas = url.searchParams.get("activas");
   const soloActivas =
     activas === "true" ? true : activas === "false" ? false : undefined;
 
-  const obras = await listObras({ soloActivas });
+  const obras = await listObras(user.id, { soloActivas });
   return Response.json({ obras });
 }
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   let body: ObraBody;
   try {
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const obra = await createObra({ nombre, descripcion, estado });
+  const obra = await createObra(user.id, { nombre, descripcion, estado });
 
   return Response.json({ obra }, { status: 201 });
 }

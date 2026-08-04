@@ -14,9 +14,9 @@ export default async function FichadasPage() {
 
   if (user.role === "ADMIN") {
     const [periodos, empleados, obras] = await Promise.all([
-      listAllPeriodos(),
-      listEmpleados(),
-      listObras(),
+      listAllPeriodos(user.id),
+      listEmpleados(user.id),
+      listObras(user.id),
     ]);
 
     const empleadoNombre = new Map(
@@ -78,7 +78,7 @@ export default async function FichadasPage() {
   const empleado = await findEmpleadoByUserId(user.id);
   const [obras, obrasRef] = await Promise.all([
     empleado ? listObrasDeEmpleado(empleado.id) : Promise.resolve([]),
-    listObras(),
+    empleado ? listObras(empleado.jefeId) : Promise.resolve([]),
   ]);
   const periodos = empleado ? await listPeriodosDeEmpleado(empleado.id) : [];
   const obraNombre = new Map(obrasRef.map((o) => [o.id, o.nombre]));
