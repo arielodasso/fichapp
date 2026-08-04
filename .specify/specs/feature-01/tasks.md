@@ -202,10 +202,11 @@
   - Requerimiento: REQ-013, REQ-015, REQ-NF-005
   - Dependencias: TASK-021
 
-- [ ] TASK-023 · `pending` · **Deploy y smoke test (registro abierto + obras por empleado)**
-  - Commit + push a `master`, deploy en Vercel (`fichapp-one.vercel.app`).
-  - Smoke test en producción: registro público 201; creación de empleado con
-    obras y enlace de invitación; persistencia en Neon.
+- [x] TASK-023 · `completed` · **Deploy y smoke test (registro abierto + obras por empleado)**
+  - Commit `34c4e4b` + push a `master`, deploy en Vercel (`fichapp-one.vercel.app`).
+  - Smoke test en producción aprobado: registro público 201 (ADMIN), obra
+    creada y persistida, empleado creado con obra asignada y enlace de
+    invitación automático, código inválido 400.
   - Requerimiento: REQ-NF-001, REQ-013, REQ-015
   - Dependencias: TASK-022
 
@@ -226,3 +227,4 @@
 | 1.3.0   | 2026-08-03 | REQ-013 y REQ-014: registro público solo-Jefe con invitaciones por empleado (enlace único, 30 días) y novedades por obra (máx. 500 caracteres). Rebranch a FichApp en metadata, login, registro y navegación. TASK-015…TASK-019 completadas; validado con lint, typecheck, 97 tests y build. TASK-020 (deploy) pendiente. |
 | 1.4.0   | 2026-08-03 | TASK-020 completada: deploy en Vercel (`fichapp-one.vercel.app`) y smoke test en producción aprobado (login/registro 200, registro público 403, código inválido 400). |
 | 1.5.0   | 2026-08-03 | REQ-013 modificado: registro de jefes abierto (se elimina el bootstrap 403, `countAdmins`). REQ-015: asignación de obras por empleado (tabla `empleado_obras`, `obraIds`, selector y badges en UI, enlace de invitación automático al crear el empleado). TASK-021 y TASK-022 completadas (105 tests, verificación CRUD en vivo contra Neon). TASK-023 (deploy) pendiente. |
+| 1.6.0   | 2026-08-03 | TASK-023 completada: deploy en Vercel (`fichapp-one.vercel.app`, commit `34c4e4b`) y smoke test en producción aprobado (registro 201, obra persistida, empleado con obra asignada y enlace automático, código inválido 400). Datos de prueba eliminados de Neon. |
