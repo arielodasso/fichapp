@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, inputClass } from "@/components/ui";
-import { AlertIcon, ClockIcon, UserIcon } from "@/components/icons";
+import { AlertIcon, UserIcon } from "@/components/icons";
 
 interface RegistroScreenProps {
   codigo: string;
@@ -66,9 +67,13 @@ export function RegistroScreen({
           href="/login"
           className="mb-6 flex items-center gap-2.5"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">
-            <ClockIcon className="h-5 w-5" />
-          </span>
+          <Image
+            src="/logo-fichapp.png"
+            alt="FichApp"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-xl"
+          />
           <span className="text-lg font-bold tracking-tight text-foreground">
             FichApp
           </span>

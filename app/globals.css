@@ -3,28 +3,28 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f4f9f6;
+  --foreground: #0c1f17;
   --card: #ffffff;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --primary: #4f46e5;
-  --primary-strong: #4338ca;
-  --primary-soft: #eef2ff;
-  --ring: #6366f1;
+  --muted: #475569;
+  --line: #dbe7e1;
+  --primary: #047857;
+  --primary-strong: #065f46;
+  --primary-soft: #d1fae5;
+  --ring: #059669;
   --destructive: #dc2626;
 }
 
 :root.dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #1e293b;
+  --background: #0a0f0c;
+  --foreground: #ecfdf5;
+  --card: #111815;
   --muted: #94a3b8;
-  --line: #334155;
-  --primary: #818cf8;
-  --primary-strong: #6366f1;
-  --primary-soft: rgba(99, 102, 241, 0.16);
-  --ring: #818cf8;
+  --line: #1f2b26;
+  --primary: #10b981;
+  --primary-strong: #059669;
+  --primary-soft: rgba(16, 185, 129, 0.16);
+  --ring: #34d399;
   --destructive: #f87171;
 }
 
@@ -57,6 +57,12 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+button:not(:disabled),
+[role="button"]:not(:disabled),
+a[href] {
+  cursor: pointer;
 }
 
 :focus-visible {

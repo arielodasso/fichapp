@@ -1,8 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentUser } from "@/lib/services/current-user";
 import { LogoutButton } from "./dashboard/logout-button";
 import { NavLinks } from "./nav-links";
-import { ClockIcon } from "@/components/icons";
 
 export default async function AppLayout({
   children,
@@ -19,9 +19,14 @@ export default async function AppLayout({
             href="/dashboard"
             className="flex items-center gap-2.5 text-foreground"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
-              <ClockIcon className="h-5 w-5" />
-            </span>
+            <Image
+              src="/logo-fichapp.png"
+              alt="FichApp"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-xl"
+              priority
+            />
             <span className="hidden text-base font-bold tracking-tight sm:block">
               FichApp
             </span>

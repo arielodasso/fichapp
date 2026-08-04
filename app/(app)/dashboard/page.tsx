@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       title: "Fichadas",
       text: "Registrá tu ingreso y egreso de hoy.",
       icon: ClockIcon,
-      accent: "text-indigo-600 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-500/15",
+      accent: "text-emerald-600 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-500/15",
     },
     {
       href: "/reportes",

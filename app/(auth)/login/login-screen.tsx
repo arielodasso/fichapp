@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Alert, cx, inputClass } from "@/components/ui";
 import {
   AlertIcon,
@@ -89,20 +90,24 @@ export function LoginScreen() {
 
   return (
     <main className="flex min-h-screen">
-      <section className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-10 text-white lg:flex">
+      <section className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-500 via-emerald-800 to-black p-10 text-white lg:flex">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl"
+          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-emerald-300/15 blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-violet-400/20 blur-3xl"
+          className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-emerald-200/10 blur-3xl"
         />
 
         <div className="relative flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-            <ClockIcon className="h-6 w-6" />
-          </span>
+          <Image
+            src="/logo-fichapp.png"
+            alt="FichApp"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-xl bg-white/10"
+          />
           <span className="text-lg font-bold tracking-tight">FichApp</span>
         </div>
 
@@ -110,7 +115,7 @@ export function LoginScreen() {
           <h1 className="text-3xl font-bold leading-tight tracking-tight">
             Fichero de empleados y obras, en orden.
           </h1>
-          <p className="mt-3 text-base text-indigo-100">
+          <p className="mt-3 text-base text-emerald-50/85">
             Digitalizá el control de ingreso y egreso, y conocé las horas
             trabajadas por obra cada semana.
           </p>
@@ -123,14 +128,14 @@ export function LoginScreen() {
                 </span>
                 <div>
                   <p className="font-semibold">{f.title}</p>
-                  <p className="text-sm text-indigo-100">{f.text}</p>
+                  <p className="text-sm text-emerald-50/80">{f.text}</p>
                 </div>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative text-sm text-indigo-200">
+        <p className="relative text-sm text-emerald-50/70">
           Construcción · Obras · Equipos · Horas
         </p>
       </section>
@@ -138,9 +143,13 @@ export function LoginScreen() {
       <section className="flex flex-1 items-center justify-center bg-background p-6">
         <div className="w-full max-w-sm">
           <div className="mb-6 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">
-              <ClockIcon className="h-5 w-5" />
-            </span>
+            <Image
+              src="/logo-fichapp.png"
+              alt="FichApp"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-xl"
+            />
             <span className="text-lg font-bold tracking-tight text-foreground">
               FichApp
             </span>

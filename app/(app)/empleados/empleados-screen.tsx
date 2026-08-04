@@ -288,7 +288,7 @@ export function EmpleadosScreen({
                                 : [...prev, o.id]
                             )
                           }
-                          className="h-4 w-4 rounded border-line accent-indigo-600"
+                          className="h-4 w-4 rounded border-line accent-emerald-600"
                         />
                         {o.nombre}
                       </label>
@@ -303,7 +303,7 @@ export function EmpleadosScreen({
                   type="checkbox"
                   checked={activo}
                   onChange={(e) => setActivo(e.target.checked)}
-                  className="h-4 w-4 rounded border-line accent-indigo-600"
+                  className="h-4 w-4 rounded border-line accent-emerald-600"
                 />
                 Activo
               </label>

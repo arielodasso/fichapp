@@ -248,7 +248,7 @@ export function ObraScreen({
                 type="checkbox"
                 checked={activo}
                 onChange={(e) => setActivo(e.target.checked)}
-                className="h-4 w-4 rounded border-line accent-indigo-600"
+                className="h-4 w-4 rounded border-line accent-emerald-600"
               />
               Activa
             </label>

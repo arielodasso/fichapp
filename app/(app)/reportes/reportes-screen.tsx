@@ -36,9 +36,6 @@ export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
     (acc, obra) => acc + obra.empleados.reduce((s, e) => s + e.horas, 0),
     0
   );
-  const empleadosConHoras = new Set(
-    reporte.porObra.flatMap((o) => o.empleados.map((e) => e.empleadoId))
-  ).size;
 
   const stats = [
     {
@@ -46,7 +43,7 @@ export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
       value: formatHoras(totalGeneral),
       icon: BarChartIcon,
       accent:
-        "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300",
+        "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
     },
     {
       label: "Obras con actividad",
@@ -57,7 +54,7 @@ export function ReportesScreen({ reporte }: { reporte: ReporteSemanalDTO }) {
     },
     {
       label: "Empleados activos",
-      value: String(empleadosConHoras),
+      value: String(reporte.empleadosActivos),
       icon: UsersIcon,
       accent:
         "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",

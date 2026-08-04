@@ -25,6 +25,7 @@ export interface ReporteSemanalDTO {
   inicioSemana: string;
   finSemana: string;
   porObra: FilaObraReporte[];
+  empleadosActivos: number;
 }
 
 export async function getReporteSemanal(
@@ -83,5 +84,6 @@ export async function getReporteSemanal(
     inicioSemana: formatearFechaLocal(inicio),
     finSemana: formatearFechaLocal(fin),
     porObra,
+    empleadosActivos: empleados.filter((e) => e.activo).length,
   };
 }
