@@ -70,9 +70,9 @@ export function RegistroScreen({
           <Image
             src="/logo-fichapp.png"
             alt="FichApp"
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-xl"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-xl"
           />
           <span className="text-lg font-bold tracking-tight text-foreground">
             FichApp
