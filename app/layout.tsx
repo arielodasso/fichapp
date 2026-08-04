@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
 const display = Plus_Jakarta_Sans({
@@ -17,13 +18,26 @@ export const metadata: Metadata = {
     "Registro de ingreso/egreso y reporte semanal de horas por obra",
 };
 
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("fichapp-theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})()`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${display.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <head>
+        <script
+          type="text/javascript"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
+        />
+      </head>
+      <body className="min-h-full">
+        {children}
+        <ThemeToggle />
+      </body>
     </html>
   );
 }

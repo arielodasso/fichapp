@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatHoras } from "@/lib/format";
 import {
   Alert,
   Badge,
@@ -39,6 +40,7 @@ interface EmpleadosScreenProps {
   usuarios: { id: string; email: string; name: string }[];
   obras: { id: string; nombre: string }[];
   invitaciones: Record<string, { id: string; codigo: string; expiraEn: string }>;
+  horasTotales: Record<string, number>;
 }
 
 export function EmpleadosScreen({
@@ -46,6 +48,7 @@ export function EmpleadosScreen({
   usuarios,
   obras,
   invitaciones,
+  horasTotales,
 }: EmpleadosScreenProps) {
   const router = useRouter();
   const [formOpen, setFormOpen] = useState(false);
@@ -391,6 +394,7 @@ export function EmpleadosScreen({
                   <th className="px-4 py-3">Documento</th>
                   <th className="px-4 py-3">Rol</th>
                   <th className="px-4 py-3">Obras</th>
+                  <th className="px-4 py-3 text-right">Horas totales</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3 text-right">Acciones</th>
                 </tr>
@@ -430,6 +434,9 @@ export function EmpleadosScreen({
                           })}
                         </div>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">
+                      {formatHoras(horasTotales[e.id] ?? 0)}
                     </td>
                     <td className="px-4 py-3">
                       {e.activo ? (

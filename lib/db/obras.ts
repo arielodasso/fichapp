@@ -62,7 +62,7 @@ export async function listObras(options?: {
 }): Promise<Obra[]> {
   const { rows } = await pool.query<ObraRow>(
     `SELECT * FROM obras
-     WHERE ($1::boolean IS NULL OR activo = $1)
+     WHERE ($1::boolean IS NOT TRUE OR activo = true)
      ORDER BY nombre ASC`,
     [options?.soloActivas ?? null]
   );

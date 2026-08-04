@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
@@ -13,19 +15,17 @@
   --destructive: #dc2626;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --muted: #94a3b8;
-    --line: #334155;
-    --primary: #818cf8;
-    --primary-strong: #6366f1;
-    --primary-soft: rgba(99, 102, 241, 0.16);
-    --ring: #818cf8;
-    --destructive: #f87171;
-  }
+:root.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --muted: #94a3b8;
+  --line: #334155;
+  --primary: #818cf8;
+  --primary-strong: #6366f1;
+  --primary-soft: rgba(99, 102, 241, 0.16);
+  --ring: #818cf8;
+  --destructive: #f87171;
 }
 
 @theme inline {
@@ -47,10 +47,8 @@ html {
   scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+html.dark {
+  color-scheme: dark;
 }
 
 body {

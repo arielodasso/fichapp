@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   findEmpleadoByUserId: vi.fn(),
   findObraById: vi.fn(),
   listObras: vi.fn(),
+  listObrasDeEmpleado: vi.fn(),
   findPeriodoAbierto: vi.fn(),
   createIngreso: vi.fn(),
   cerrarPeriodo: vi.fn(),
@@ -27,6 +28,7 @@ vi.mock("@/lib/db/empleados", () => ({
 vi.mock("@/lib/db/obras", () => ({
   findObraById: mocks.findObraById,
   listObras: mocks.listObras,
+  listObrasDeEmpleado: mocks.listObrasDeEmpleado,
 }));
 vi.mock("@/lib/db/fichadas", () => ({
   PeriodoAbiertoError: mocks.PeriodoAbiertoError,
@@ -45,7 +47,7 @@ const user = {
   role: "EMPLOYEE",
 };
 
-const empleado = { id: "e-1", nombre: "Juan", apellido: "Pérez" };
+const empleado = { id: "e-1", nombre: "Juan", apellido: "Pérez", obraIds: [] };
 
 const obra = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -70,8 +72,12 @@ function jsonRequest(body: unknown): Request {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getCurrentUser.mockResolvedValue(user);
-  mocks.findEmpleadoByUserId.mockResolvedValue(empleado);
+  mocks.findEmpleadoByUserId.mockResolvedValue({
+    ...empleado,
+    obraIds: [obra.id],
+  });
   mocks.listObras.mockResolvedValue([obra]);
+  mocks.listObrasDeEmpleado.mockResolvedValue([obra]);
 });
 
 describe("POST /api/fichadas: autorización", () => {
@@ -120,6 +126,18 @@ describe("POST /api/fichadas: validación de entrada (REQ-NF-002)", () => {
     mocks.findObraById.mockResolvedValue({ ...obra, activo: false });
     const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
     expect(res.status).toBe(400);
+  });
+
+  it("rechaza un ingreso a una obra no asignada al empleado (REQ-015)", async () => {
+    mocks.findObraById.mockResolvedValue(obra);
+    mocks.findEmpleadoByUserId.mockResolvedValue({
+      ...empleado,
+      obraIds: [],
+    });
+    const res = await POST(jsonRequest({ tipo: "ingreso", obraId: obra.id }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: expect.stringContaining("asignada") });
+    expect(mocks.createIngreso).not.toHaveBeenCalled();
   });
 });
 

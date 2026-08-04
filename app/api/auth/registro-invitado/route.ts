@@ -37,9 +37,9 @@ export async function POST(request: Request) {
     typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body.password === "string" ? body.password : "";
 
-  if (!codigo || !name || !email || !email.includes("@") || password.length < 8) {
+  if (!codigo || !email || !email.includes("@") || password.length < 8) {
     return Response.json(
-      { error: "Datos inválidos: enlace, nombre, email válido y contraseña (mín. 8 caracteres)" },
+      { error: "Datos inválidos: enlace, email válido y contraseña (mín. 8 caracteres)" },
       { status: 400 }
     );
   }
@@ -59,13 +59,17 @@ export async function POST(request: Request) {
     );
   }
 
+  const nombrePerfil =
+    `${invitacion.empleadoNombre ?? ""} ${invitacion.empleadoApellido ?? ""}`.trim();
+  const nombre = name || nombrePerfil;
+
   const passwordHash = await hashPassword(password);
 
   let user;
   try {
     user = await registrarEmpleadoInvitado(codigo, {
       email,
-      name,
+      name: nombre,
       passwordHash,
     });
   } catch (err) {

@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/services/current-user";
 import { findEmpleadoByUserId } from "@/lib/db/empleados";
-import { listObras } from "@/lib/db/obras";
+import { listObras, listObrasDeEmpleado } from "@/lib/db/obras";
 import { listPeriodosDeEmpleado } from "@/lib/db/fichadas";
 import { calcularHoras } from "@/lib/domain/horarios";
 import { FichadasScreen } from "./fichadas-screen";
@@ -9,9 +9,12 @@ export default async function FichadasPage() {
   const user = await requireUser();
 
   const empleado = await findEmpleadoByUserId(user.id);
-  const obras = await listObras({ soloActivas: true });
+  const [obras, obrasRef] = await Promise.all([
+    empleado ? listObrasDeEmpleado(empleado.id) : Promise.resolve([]),
+    listObras(),
+  ]);
   const periodos = empleado ? await listPeriodosDeEmpleado(empleado.id) : [];
-  const obraNombre = new Map(obras.map((o) => [o.id, o.nombre]));
+  const obraNombre = new Map(obrasRef.map((o) => [o.id, o.nombre]));
 
   return (
     <FichadasScreen

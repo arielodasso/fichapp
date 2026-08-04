@@ -6,7 +6,7 @@ import {
   validarIngreso,
 } from "@/lib/domain/horarios";
 import { findEmpleadoByUserId } from "@/lib/db/empleados";
-import { findObraById, listObras } from "@/lib/db/obras";
+import { findObraById, listObras, listObrasDeEmpleado } from "@/lib/db/obras";
 import {
   PeriodoAbiertoError,
   cerrarPeriodo,
@@ -27,13 +27,16 @@ export async function GET() {
   }
 
   const empleado = await findEmpleadoByUserId(user.id);
-  const obras = await listObras({ soloActivas: true });
+  const [obras, obrasRef] = await Promise.all([
+    empleado ? listObrasDeEmpleado(empleado.id) : Promise.resolve([]),
+    listObras(),
+  ]);
 
   const periodos = empleado
     ? await listPeriodosDeEmpleado(empleado.id)
     : [];
 
-  const obraNombre = new Map(obras.map((o) => [o.id, o.nombre]));
+  const obraNombre = new Map(obrasRef.map((o) => [o.id, o.nombre]));
 
   return Response.json({
     empleado: empleado
@@ -105,6 +108,12 @@ export async function POST(request: Request) {
     const obra = await findObraById(obraId);
     if (!obra || !obra.activo) {
       return Response.json({ error: "La obra no existe o está inactiva" }, { status: 400 });
+    }
+    if (!empleado.obraIds.includes(obraId)) {
+      return Response.json(
+        { error: "La obra no está asignada a tu perfil" },
+        { status: 400 }
+      );
     }
 
     const periodoActivo = await findPeriodoAbierto(empleado.id);

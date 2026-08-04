@@ -20,7 +20,6 @@ export function RegistroScreen({
   empleadoVinculado,
 }: RegistroScreenProps) {
   const router = useRouter();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,10 +29,6 @@ export function RegistroScreen({
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
-      setError("El nombre es obligatorio");
-      return;
-    }
     if (!email.trim() || !email.includes("@")) {
       setError("Ingresá un email válido");
       return;
@@ -48,7 +43,7 @@ export function RegistroScreen({
       const res = await fetch("/api/auth/registro-invitado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ codigo, name: name.trim(), email, password }),
+        body: JSON.stringify({ codigo, email, password }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -124,18 +119,6 @@ export function RegistroScreen({
               className="mt-6 flex flex-col gap-4"
               noValidate
             >
-              <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
-                Nombre
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={inputClass}
-                  placeholder="Nombre y apellido"
-                  autoComplete="name"
-                />
-              </label>
-
               <label className="flex flex-col gap-1.5 text-sm font-medium text-foreground">
                 Email
                 <input

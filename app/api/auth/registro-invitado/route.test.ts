@@ -92,6 +92,28 @@ describe("POST /api/auth/registro-invitado (REQ-013)", () => {
     expect(mocks.registrarEmpleadoInvitado).not.toHaveBeenCalled();
   });
 
+  it("toma el nombre del perfil si no se envía nombre (registro simplificado)", async () => {
+    mocks.findInvitacionVigentePorCodigo.mockResolvedValue({
+      id: "i-1",
+      codigo: "ABC123",
+      empleadoId: "e-1",
+      empleadoNombre: "María",
+      empleadoApellido: "Gómez",
+    });
+    const res = await POST(
+      jsonRequest({
+        codigo: "ABC123",
+        email: "maria@example.com",
+        password: "secreto123",
+      })
+    );
+    expect(res.status).toBe(201);
+    expect(mocks.registrarEmpleadoInvitado).toHaveBeenCalledWith(
+      "ABC123",
+      expect.objectContaining({ name: "María Gómez" })
+    );
+  });
+
   it("rechaza datos inválidos (REQ-NF-002)", async () => {
     const res = await POST(
       jsonRequest({ codigo: "ABC123", name: "Juan", email: "x", password: "123" })
