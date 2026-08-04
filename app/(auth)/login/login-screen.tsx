@@ -104,9 +104,9 @@ export function LoginScreen() {
           <Image
             src="/logo-fichapp.png"
             alt="FichApp"
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-xl bg-white/10"
+            width={28}
+            height={28}
+            className="h-7 w-7 rounded-xl bg-white/10"
           />
           <span className="text-lg font-bold tracking-tight">FichApp</span>
         </div>
@@ -146,9 +146,9 @@ export function LoginScreen() {
             <Image
               src="/logo-fichapp.png"
               alt="FichApp"
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-xl"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-xl"
             />
             <span className="text-lg font-bold tracking-tight text-foreground">
               FichApp
